@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="me.minhael.android">
+
+
+    <application>
+
+        <activity
+            android:name="me.minhael.android.Documents"
+            android:label=""
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar.Transparent" />
+
+        <activity
+            android:name="me.minhael.android.Permissions"
+            android:label=""
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar.Transparent" />
+
+    </application>
+</manifest>
