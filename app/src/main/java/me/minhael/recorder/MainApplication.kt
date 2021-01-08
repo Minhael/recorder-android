@@ -29,13 +29,16 @@ class MainApplication : Application() {
                     module {
                         single { Storage.from(androidContext()) }
                         single<Serializer> { FstSerializer { FstSerializer.forK() } }
-                        single {
+                        factory {
                             Uri.Resolver(
                                 AndroidUriAccessor(androidContext().contentResolver),
                                 OkUriAccessor { OkHttpClient.Builder().build() }
                             )
                         }
                         factory<Props> { AndroidProps(androidContext().getSharedPreferences("default", MODE_PRIVATE), get()) }
+                        factory { FsRecorder(AudioRecorder(), get<Storage>().dirCache) }
+
+                        single { RecordController(get(), get()) }
                     }
                 )
             )

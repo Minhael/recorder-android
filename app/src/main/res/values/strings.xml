@@ -3,4 +3,13 @@
 
     <string name="msg_recording">Recording in process…</string>
     <string name="msg_saving">Saving the record…</string>
+
+    <string name="msg_permissions_granted">All necessary permissions are granted.</string>
+    <string name="msg_permissions_not_granted">Some permissions are not granted successfully.</string>
+
+    <string name="phrase_on_air">On Air</string>
+    <string name="phrase_grant_permissions">Grant permissions</string>
+    <string name="word_timer">Timer</string>
+    <string name="word_folder">Folder</string>
+    <string name="word_retry">Retry</string>
 </resources>
