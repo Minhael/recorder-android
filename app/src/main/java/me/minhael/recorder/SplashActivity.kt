@@ -6,9 +6,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import me.minhael.android.AndroidFS
 import me.minhael.android.Documents
-import me.minhael.design.Props
+import me.minhael.design.props.Props
 import org.koin.android.ext.android.inject
 import org.slf4j.LoggerFactory
+import java.io.IOException
 
 
 class SplashActivity : AppCompatActivity() {
@@ -35,15 +36,27 @@ class SplashActivity : AppCompatActivity() {
 
     private fun checkPublicDirectory(proceed: () -> Unit) {
         if (props.has(PropTags.DIR_RECORDING)) {
-            storage.dirPublic = AndroidFS.base(applicationContext, Uri.parse(props.get(PropTags.DIR_RECORDING, storage.dirPublic.root())))
-            proceed()
-        } else {
-            Documents.select(this, 0) {
-                logger.info("Export records to {}", it)
-                props.put(PropTags.DIR_RECORDING, it.toString())
-                storage.dirPublic = AndroidFS.base(applicationContext, it)
+            try {
+                storage.dirPublic = AndroidFS.base(
+                    applicationContext,
+                    Uri.parse(props.get(PropTags.DIR_RECORDING, storage.dirPublic.root()))
+                )
                 proceed()
+            } catch(e: IOException) {
+                logger.warn("Recordings location is being deleted. Prompt for re-select.")
+                selectDocument()
             }
+        } else {
+            selectDocument()
+        }
+    }
+
+    private fun selectDocument() {
+        Documents.select(this, 0) {
+            logger.info("Export records to {}", it)
+            props.put(PropTags.DIR_RECORDING, it.toString())
+            storage.dirPublic = AndroidFS.base(applicationContext, it)
+            proceed()
         }
     }
 

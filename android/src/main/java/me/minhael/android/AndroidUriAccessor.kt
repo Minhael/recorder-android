@@ -1,8 +1,7 @@
 package me.minhael.android
 
 import android.content.ContentResolver
-import android.content.Context
-import me.minhael.design.Uri
+import me.minhael.design.fs.Uri
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream

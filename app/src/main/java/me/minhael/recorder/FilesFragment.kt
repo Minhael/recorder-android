@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_files.*
 import kotlinx.android.synthetic.main.item_record.view.*
 import me.minhael.android.ItemAdapter
-import me.minhael.design.FileSystem
+import me.minhael.design.fs.FileSystem
 
 class FilesFragment : Fragment() {
 

@@ -2,7 +2,7 @@ package me.minhael.recorder
 
 import android.content.Context
 import me.minhael.android.AndroidFS
-import me.minhael.design.FileSystem
+import me.minhael.design.fs.FileSystem
 
 data class Storage(
     val dirCache: FileSystem,

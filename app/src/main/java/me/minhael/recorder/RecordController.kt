@@ -1,10 +1,16 @@
 package me.minhael.recorder
 
 import android.app.Activity
+import android.content.Context
+import androidx.work.Worker
+import androidx.work.WorkerParameters
 import me.minhael.android.Services
-import me.minhael.design.Uri
+import me.minhael.design.fs.Uri
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
+import org.koin.core.component.KoinApiExtension
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class RecordController(
     private val resolver: Uri.Resolver,
@@ -21,7 +27,7 @@ class RecordController(
                 recorder.close()
                 output?.apply { export(this) }
             } else {
-                output = recorder.record("Record@${FORMAT_TIME.print(LocalDateTime())}")
+                output = recorder.record(storage.dirCache, "Record@${FORMAT_TIME.print(LocalDateTime())}")
             }
             onToggle(!isRecording)
         }

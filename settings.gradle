@@ -1,4 +1,3 @@
-include ':design'
 include ':android'
 include ':app'
 rootProject.name = "Recorder"

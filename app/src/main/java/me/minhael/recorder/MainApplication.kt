@@ -1,13 +1,14 @@
 package me.minhael.recorder
 
 import android.app.Application
+import androidx.work.WorkManager
 import me.minhael.android.AndroidProps
 import me.minhael.android.AndroidUriAccessor
-import me.minhael.android.FstSerializer
-import me.minhael.android.OkUriAccessor
-import me.minhael.design.Props
-import me.minhael.design.Serializer
-import me.minhael.design.Uri
+import me.minhael.design.fs.OkUriAccessor
+import me.minhael.design.fs.Uri
+import me.minhael.design.props.Props
+import me.minhael.design.sl.FstSerializer
+import me.minhael.design.sl.Serializer
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -27,6 +28,8 @@ class MainApplication : Application() {
             modules(
                 listOf(
                     module {
+                        factory { WorkManager.getInstance(androidContext()) }
+
                         single { Storage.from(androidContext()) }
                         single<Serializer> { FstSerializer { FstSerializer.forK() } }
                         factory {
@@ -36,9 +39,10 @@ class MainApplication : Application() {
                             )
                         }
                         factory<Props> { AndroidProps(androidContext().getSharedPreferences("default", MODE_PRIVATE), get()) }
-                        factory { FsRecorder(AudioRecorder(), get<Storage>().dirCache) }
+                        factory<Recorder> { AmrRecorder() }
 
                         single { RecordController(get(), get()) }
+                        single { ScheduleController(get()) }
                     }
                 )
             )

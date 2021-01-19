@@ -1,9 +1,10 @@
 package me.minhael.android
 
 import android.content.SharedPreferences
-import me.minhael.design.Props
-import me.minhael.design.Serializer
-import me.minhael.design.Store
+import me.minhael.design.props.Props
+import me.minhael.design.props.Store
+import me.minhael.design.props.base64
+import me.minhael.design.sl.Serializer
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.locks.ReentrantLock

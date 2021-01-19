@@ -1,18 +1,19 @@
 package me.minhael.recorder
 
 import android.media.MediaRecorder
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
+import me.minhael.design.fs.FileSystem
 import org.slf4j.LoggerFactory
-import java.io.Closeable
 
-class AudioRecorder: Recorder, Closeable {
+class AmrRecorder: Recorder {
 
     private val recorder = MediaRecorder()
 
     private var isRecording = false
 
-    override fun record(filename: String): String {
+    override fun record(fs: FileSystem, filename: String): String {
+        val output = fs.create("audio/amr", filename)
+        val file = fs.toFile(output)
+
         stop()
         isRecording = true
 
@@ -22,12 +23,13 @@ class AudioRecorder: Recorder, Closeable {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.AMR_NB)
             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-            setOutputFile(filename)
+            setOutputFile(file.absolutePath)
             prepare()
             start()
+            maxAmplitude
         }
 
-        return filename
+        return output
     }
 
     override fun stop() {
@@ -41,10 +43,12 @@ class AudioRecorder: Recorder, Closeable {
     override fun isRecording() = isRecording
 
     override fun close() {
+        stop()
         logger.debug("Release MediaRecorder")
+        recorder.release()
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(AudioRecorder::class.java)
+        private val logger = LoggerFactory.getLogger(AmrRecorder::class.java)
     }
 }

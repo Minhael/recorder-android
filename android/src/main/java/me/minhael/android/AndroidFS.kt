@@ -4,14 +4,16 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.documentfile.provider.DocumentFile
-import me.minhael.design.FileSystem
-import me.minhael.design.Uri
+import me.minhael.design.fs.FileSystem
+import me.minhael.design.fs.Uri
+import me.minhael.design.x.touch
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
+import java.lang.NullPointerException
 
 class AndroidFS internal constructor(
     private val context: Context,
@@ -38,12 +40,16 @@ class AndroidFS internal constructor(
         return root.findFile(filename)?.delete() ?: true
     }
 
-    override fun list(path: String): List<String> {
+    override fun list(): List<String> {
         return root.listFiles().filter { it.isFile }.map { it.uri.toString() }
     }
 
-    override fun listDir(path: String): List<String> {
+    override fun listDir(): List<String> {
         return root.listFiles().filter { it.isDirectory }.map { it.uri.toString() }
+    }
+
+    override fun browse(uri: String): FileSystem {
+        TODO("Not yet implemented")
     }
 
     override fun root(): String {
@@ -68,6 +74,8 @@ class AndroidFS internal constructor(
     companion object {
 
         fun base(context: Context, file: File): AndroidFS {
+            if (!file.exists() && !file.mkdirs())
+                throw IOException("Failed to use directory as root")
             return AndroidFS(
                 context,
                 Uri.Resolver(AndroidUriAccessor(context.contentResolver)),
@@ -77,11 +85,13 @@ class AndroidFS internal constructor(
 
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         fun base(context: Context, treeUri: android.net.Uri): AndroidFS {
+            val root = DocumentFile.fromTreeUri(context, treeUri) ?: throw IllegalStateException("API < 21")
+            if (!root.exists())
+                throw IOException("Failed to use URI as root")
             return AndroidFS(
                 context,
                 Uri.Resolver(AndroidUriAccessor(context.contentResolver)),
-                DocumentFile.fromTreeUri(context, treeUri)
-                    ?: throw IllegalStateException("API < 21")
+                root
             )
         }
 

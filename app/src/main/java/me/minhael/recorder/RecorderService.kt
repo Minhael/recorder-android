@@ -6,11 +6,12 @@ import android.os.Binder
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import me.minhael.design.fs.FileSystem
 import org.koin.android.ext.android.inject
 
 class RecorderService : Service() {
 
-    private val recorder: FsRecorder by inject()
+    private val recorder: Recorder by inject()
 
     private val binder = RecorderBinder()
 
@@ -70,10 +71,10 @@ class RecorderService : Service() {
 
     inner class RecorderBinder : Recorder, Binder() {
 
-        override fun record(filename: String): String {
+        override fun record(fs: FileSystem, filename: String): String {
             stop()
             startForeground()
-            return recorder.record(filename)
+            return recorder.record(fs, filename)
         }
 
         override fun stop() {

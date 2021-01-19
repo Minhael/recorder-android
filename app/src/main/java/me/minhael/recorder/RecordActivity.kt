@@ -5,9 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_record.*
 import me.minhael.android.Services
-import me.minhael.design.Uri
-import org.joda.time.LocalDateTime
-import org.joda.time.format.DateTimeFormat
 import org.koin.android.ext.android.inject
 
 class RecordActivity : AppCompatActivity() {

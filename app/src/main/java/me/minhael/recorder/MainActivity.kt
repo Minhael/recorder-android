@@ -10,7 +10,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import me.minhael.android.AndroidFS
 import me.minhael.android.Documents
-import me.minhael.design.Props
+import me.minhael.design.props.Props
 import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {
@@ -42,7 +42,10 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, RecordActivity::class.java))
                 true
             }
-            R.id.action_timer -> true
+            R.id.action_timer -> {
+                startActivity(Intent(this, ScheduleActivity::class.java))
+                true
+            }
             R.id.action_folder -> {
                 Documents.select(this, 0) {
                     props.put(PropTags.DIR_RECORDING, it.toString())
