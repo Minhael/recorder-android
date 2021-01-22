@@ -2,7 +2,7 @@ package me.minhael.recorder
 
 import android.Manifest
 import android.content.Context
-import me.minhael.android.Permissions
+import me.minhael.design.android.Permissions
 
 object Permissions {
 

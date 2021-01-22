@@ -1,3 +1,4 @@
-include ':android'
+include ':design-koin'
+include ':design-android'
 include ':app'
 rootProject.name = "Recorder"
