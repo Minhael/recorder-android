@@ -42,5 +42,8 @@ dependencies {
 
     implementation 'org.greenrobot:eventbus:3.2.0'
 
-    api "me.minhael:design-bootstrap:$design_version"
+    api 'net.danlew:android.joda:2.10.9'
+    api("me.minhael:design-bootstrap:$design_version") {
+        exclude group: 'joda-time', module: 'joda-time'
+    }
 }

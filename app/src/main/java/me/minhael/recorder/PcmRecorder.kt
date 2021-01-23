@@ -3,17 +3,12 @@ package me.minhael.recorder
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.provider.Settings
 import kotlinx.coroutines.*
 import me.minhael.design.fs.FileSystem
 import me.minhael.design.fs.Uri
 import me.minhael.design.x.asHex
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.io.OutputStream
-import java.nio.ShortBuffer
-import kotlin.concurrent.thread
-import kotlin.coroutines.CoroutineContext
 
 class PcmRecorder(
     private val resolver: Uri.Resolver,

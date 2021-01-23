@@ -5,14 +5,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import me.minhael.design.android.Services
 import me.minhael.recorder.R
-import me.minhael.recorder.controller.RecordController
 import me.minhael.recorder.Recorder
 import me.minhael.recorder.databinding.ActivityRecordBinding
+import me.minhael.recorder.service.Recording
 import org.koin.android.ext.android.inject
 
 class RecordActivity : AppCompatActivity() {
 
-    private val controller: RecordController by inject()
+    private val recording: Recording by inject()
 
     private lateinit var v: ActivityRecordBinding
 
@@ -36,7 +36,7 @@ class RecordActivity : AppCompatActivity() {
         v.recordFab.setOnClickListener {
             v.recordFab.isEnabled = false
 
-            controller.toggle(this) {
+            recording.toggle {
                 v.recordFab.setImageDrawable(
                     ContextCompat.getDrawable(
                         applicationContext,

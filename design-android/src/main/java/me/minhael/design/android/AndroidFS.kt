@@ -10,8 +10,6 @@ import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
 
 class AndroidFS internal constructor(
     private val context: Context,

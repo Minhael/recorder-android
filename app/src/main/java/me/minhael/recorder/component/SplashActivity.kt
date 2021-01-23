@@ -9,7 +9,7 @@ import me.minhael.design.android.Documents
 import me.minhael.design.props.Props
 import me.minhael.recorder.Permissions
 import me.minhael.recorder.PropTags
-import me.minhael.recorder.controller.Storage
+import me.minhael.recorder.service.Storage
 import org.koin.android.ext.android.inject
 import org.slf4j.LoggerFactory
 import java.io.IOException

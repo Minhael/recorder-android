@@ -6,10 +6,16 @@
 
     <string name="msg_permissions_granted">All necessary permissions are granted.</string>
     <string name="msg_permissions_not_granted">Some permissions are not granted successfully.</string>
+    <string name="msg_schedule_early_end_time">Error: End time is earlier than start time.</string>
 
     <string name="phrase_on_air">On Air</string>
     <string name="phrase_grant_permissions">Grant permissions</string>
+    <string name="phrase_daily_recording">Daily Recording</string>
+    <string name="phrase_start_time">Start time</string>
+    <string name="phrase_end_time">End time</string>
+
     <string name="word_timer">Timer</string>
     <string name="word_folder">Folder</string>
     <string name="word_retry">Retry</string>
+    <string name="word_period">Period</string>
 </resources>

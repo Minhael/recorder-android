@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlin.collections.ArrayList
 import kotlin.math.min
 
 class ItemAdapter : RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
@@ -24,16 +23,26 @@ class ItemAdapter : RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
         notifyItemRangeInserted(position, items.size)
     }
 
-    fun update(position: Int, vararg items: Item) {
-        val offset = min(items.size, list.size - position)
-        for (i in 0 until offset) {
-            updateItem(items[i], position + i)
-        }
-        if (offset > 0 && items.size > offset) {
-            for (i in 0 until items.size - offset) {
-                putItem(items[offset + i], list.size)
+    fun update(vararg items: Item) {
+        items.forEach {
+            val index = list.indexOf(it)
+            if (index > -1) {
+                updateItem(it, index)
+                notifyItemChanged(index)
             }
         }
+    }
+
+    fun update(position: Int, vararg items: Item) {
+        val size = min(list.size - position, items.size)
+        for (i in 0 until size) {
+            updateItem(items[i], position + i)
+        }
+        for (i in 0 until items.size - size) {
+            putItem(items[size + i], list.size)
+        }
+//        notifyItemRangeRemoved(position, items.size)
+//        notifyItemRangeInserted(position, items.size)
         notifyItemRangeChanged(position, items.size)
     }
 

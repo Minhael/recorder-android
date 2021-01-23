@@ -12,7 +12,7 @@ object PropTags {
     const val RECORDING_TIME_START_DEFAULT = 0L
 
     const val RECORDING_DURATION_MS = "recording.duration.ms"
-    const val RECORDING_DURATION_MS_DEFAULT = 5 * 1000L
+    const val RECORDING_DURATION_MS_DEFAULT = 1 * 60 * 60 * 1000L
 
     const val RECORDING_PERIOD_MS = "recording.period.ms"
     const val RECORDING_PERIOD_MS_DEFAULT = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS

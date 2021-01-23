@@ -13,9 +13,9 @@ import me.minhael.design.props.Props
 import me.minhael.recorder.Permissions
 import me.minhael.recorder.PropTags
 import me.minhael.recorder.R
-import me.minhael.recorder.controller.Storage
 import me.minhael.recorder.databinding.ActivityMainBinding
-import me.minhael.recorder.ui.FilesFragment
+import me.minhael.recorder.service.Storage
+import me.minhael.recorder.view.FilesFragment
 import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {

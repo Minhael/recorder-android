@@ -7,13 +7,14 @@ import me.minhael.design.android.AndroidUriAccessor
 import me.minhael.design.fs.OkUriAccessor
 import me.minhael.design.fs.Uri
 import me.minhael.design.job.JobScheduler
+import me.minhael.design.koin.AndroidScheduler
 import me.minhael.design.props.Props
 import me.minhael.design.sl.FstSerializer
 import me.minhael.design.sl.Serializer
 import me.minhael.recorder.*
-import me.minhael.recorder.controller.RecordController
-import me.minhael.recorder.controller.ScheduleController
-import me.minhael.recorder.controller.Storage
+import me.minhael.recorder.service.Recording
+import me.minhael.recorder.service.Schedule
+import me.minhael.recorder.service.Storage
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -46,11 +47,11 @@ class MainApplication : Application() {
                         }
                         factory<Props> { AndroidProps(androidContext().getSharedPreferences("default", MODE_PRIVATE), get()) }
                         factory<Recorder> { AmrRecorder() }
-                        factory<JobScheduler> { me.minhael.design.koin.AndroidScheduler(get(), get()) }
+                        factory<JobScheduler> { AndroidScheduler(get(), get()) }
 
                         single { Storage.from(androidContext()) }
-                        single { RecordController(get(), get()) }
-                        single { ScheduleController(get(), get()) }
+                        single { Schedule(get(), get()) }
+                        single { Recording(androidContext(), get(), get(), get()) }
                     }
                 )
             )
