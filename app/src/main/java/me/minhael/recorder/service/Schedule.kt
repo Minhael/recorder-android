@@ -1,27 +1,43 @@
 package me.minhael.recorder.service
 
-import me.minhael.design.job.JobScheduler
+import me.minhael.design.job.Jobs
 import me.minhael.design.props.Props
 import me.minhael.recorder.PropTags
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.DateTime
 import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.math.max
 
 class Schedule(
     private val props: Props,
-    private val scheduler: JobScheduler
+    private val scheduler: Jobs
 ) {
 
     @KoinApiExtension
     fun activate() {
-        val timestamp = props.get(PropTags.RECORDING_TIME_START, PropTags.RECORDING_TIME_START_DEFAULT)
-        val durationMs = props.get(PropTags.RECORDING_DURATION_MS, PropTags.RECORDING_DURATION_MS_DEFAULT)
+        val now = DateTime()
+
+        val startTime = DateTime(props.get(PropTags.RECORDING_TIME_START, PropTags.RECORDING_TIME_START_DEFAULT))
+        val nextStart = now
+            .withHourOfDay(startTime.hourOfDay)
+            .withMinuteOfHour(startTime.minuteOfHour)
+            .withSecondOfMinute(0)
+            .withMillisOfSecond(0)
+            .let {
+                if (it.isBefore(now))
+                    it.plusDays(1)
+                else
+                    it
+            }
+
+        val nextEnd = DateTime(props.get(PropTags.RECORDING_TIME_END, PropTags.RECORDING_TIME_END_DEFAULT)).run {
+            nextStart.plus(max(0, millis - startTime.millis))
+        }
+
         val periodMs = props.get(PropTags.RECORDING_PERIOD_MS, PropTags.RECORDING_PERIOD_MS_DEFAULT)
 
-        scheduler.set(WORK_ACTIVATE, JobScheduler.Periodic(timestamp, periodMs)) {
-            Activate(durationMs)
-        }
+        scheduler.set(WORK_ACTIVATE, Jobs.Periodic(nextStart.millis, periodMs)) { Activate(nextEnd.millis) }
     }
 
     fun deactivate() {
@@ -29,15 +45,12 @@ class Schedule(
     }
 
     @KoinApiExtension
-    class Activate(private val durationMs: Long) : JobScheduler.Job, KoinComponent {
+    class Activate(private val endTime: Long) : Jobs.Job, KoinComponent {
         override fun execute(): Boolean {
-            val scheduler: JobScheduler by inject()
+            val scheduler: Jobs by inject()
             val recording: Recording by inject()
 
-            scheduler.set(WORK_DEACTIVATE, JobScheduler.OneShot(System.currentTimeMillis() + durationMs)) {
-                Deactivate()
-            }
-
+            scheduler.set(WORK_DEACTIVATE, Jobs.OneShot(endTime)) { Deactivate() }
             recording.start()
 
             return true
@@ -45,7 +58,7 @@ class Schedule(
     }
 
     @KoinApiExtension
-    class Deactivate : JobScheduler.Job, KoinComponent {
+    class Deactivate : Jobs.Job, KoinComponent {
         override fun execute(): Boolean {
             val recording: Recording by inject()
             recording.stop()

@@ -28,11 +28,10 @@ class ScheduleActivity : AppCompatActivity() {
         setSupportActionBar(v.scheduleToolbar)
 
         val startTime = props.get(PropTags.RECORDING_TIME_START, PropTags.RECORDING_TIME_START_DEFAULT)
-        val duration = props.get(PropTags.RECORDING_DURATION_MS, PropTags.RECORDING_DURATION_MS_DEFAULT)
+        val endTime = props.get(PropTags.RECORDING_TIME_END, PropTags.RECORDING_TIME_END_DEFAULT)
 
         scheduleViewModel.isActivate.value = props.get(PropTags.RECORDING_DAILY, PropTags.RECORDING_DAILY_DEFAULT)
-        scheduleViewModel.interval.value = startTime to duration
-        scheduleViewModel.periodMs.value = props.get(PropTags.RECORDING_PERIOD_MS, PropTags.RECORDING_PERIOD_MS_DEFAULT)
+        scheduleViewModel.interval.value = startTime to endTime
 
         scheduleViewModel.isActivate.observe(this) {
             if (props.get(PropTags.RECORDING_DAILY, PropTags.RECORDING_DAILY_DEFAULT) != it) {
@@ -45,7 +44,7 @@ class ScheduleActivity : AppCompatActivity() {
             }
         }
 
-        scheduleViewModel.interval.observe(this) { (startTime, duration) ->
+        scheduleViewModel.interval.observe(this) { (startTime, endTime) ->
             if (props.get(PropTags.RECORDING_TIME_START, PropTags.RECORDING_TIME_START_DEFAULT) != startTime) {
                 props.put(PropTags.RECORDING_TIME_START, startTime)
                 if (props.get(PropTags.RECORDING_DAILY, PropTags.RECORDING_DAILY_DEFAULT)) {
@@ -53,17 +52,8 @@ class ScheduleActivity : AppCompatActivity() {
                 }
             }
 
-            if (props.get(PropTags.RECORDING_DURATION_MS, PropTags.RECORDING_DURATION_MS_DEFAULT) != duration) {
-                props.put(PropTags.RECORDING_DURATION_MS, duration)
-                if (props.get(PropTags.RECORDING_DAILY, PropTags.RECORDING_DAILY_DEFAULT)) {
-                    controller.activate()
-                }
-            }
-        }
-
-        scheduleViewModel.periodMs.observe(this) {
-            if (props.get(PropTags.RECORDING_PERIOD_MS, PropTags.RECORDING_PERIOD_MS_DEFAULT) != it) {
-                props.put(PropTags.RECORDING_PERIOD_MS, it)
+            if (props.get(PropTags.RECORDING_TIME_END, PropTags.RECORDING_TIME_END_DEFAULT) != endTime) {
+                props.put(PropTags.RECORDING_TIME_END, endTime)
                 if (props.get(PropTags.RECORDING_DAILY, PropTags.RECORDING_DAILY_DEFAULT)) {
                     controller.activate()
                 }

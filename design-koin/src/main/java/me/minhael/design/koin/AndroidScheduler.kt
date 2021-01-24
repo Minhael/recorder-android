@@ -2,7 +2,7 @@ package me.minhael.design.koin
 
 import android.content.Context
 import androidx.work.*
-import me.minhael.design.job.JobScheduler
+import me.minhael.design.job.Jobs
 import me.minhael.design.sl.Serializer
 import me.minhael.design.x.deserialize
 import org.koin.core.component.KoinApiExtension
@@ -15,9 +15,9 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 @KoinApiExtension
-class AndroidScheduler(private val workManager: WorkManager, private val serializer: Serializer) : JobScheduler {
+class AndroidScheduler(private val workManager: WorkManager, private val serializer: Serializer) : Jobs {
 
-    override fun set(name: String, trigger: JobScheduler.Trigger, builder: () -> JobScheduler.Job) {
+    override fun set(name: String, trigger: Jobs.Trigger, builder: () -> Jobs.Job) {
         trigger.visit(provider, name, builder)
     }
 
@@ -26,11 +26,11 @@ class AndroidScheduler(private val workManager: WorkManager, private val seriali
         workManager.cancelUniqueWork(name)
     }
 
-    private val provider = object : JobScheduler.TriggerProvider {
+    private val provider = object : Jobs.TriggerProvider {
         override fun setup(
-            trigger: JobScheduler.Trigger,
+            trigger: Jobs.Trigger,
             name: String,
-            builder: () -> JobScheduler.Job
+            builder: () -> Jobs.Job
         ) {
             val bJob = ByteArrayOutputStream().use {
                 serializer.serialize(Builder(builder), it)
@@ -47,9 +47,9 @@ class AndroidScheduler(private val workManager: WorkManager, private val seriali
         }
 
         override fun setup(
-            trigger: JobScheduler.OneShot,
+            trigger: Jobs.OneShot,
             name: String,
-            builder: () -> JobScheduler.Job
+            builder: () -> Jobs.Job
         ) {
             val bJob = ByteArrayOutputStream().use {
                 serializer.serialize(Builder(builder), it)
@@ -68,9 +68,9 @@ class AndroidScheduler(private val workManager: WorkManager, private val seriali
         }
 
         override fun setup(
-            trigger: JobScheduler.Periodic,
+            trigger: Jobs.Periodic,
             name: String,
-            builder: () -> JobScheduler.Job
+            builder: () -> Jobs.Job
         ) {
             val bJob = ByteArrayOutputStream().use {
                 serializer.serialize(Builder(builder), it)
@@ -104,9 +104,9 @@ class AndroidScheduler(private val workManager: WorkManager, private val seriali
         }
 
         override fun setup(
-            trigger: JobScheduler.Boot,
+            trigger: Jobs.Boot,
             name: String,
-            builder: () -> JobScheduler.Job
+            builder: () -> Jobs.Job
         ) {
             TODO("Not yet implemented")
         }
@@ -130,7 +130,7 @@ class AndroidScheduler(private val workManager: WorkManager, private val seriali
         }
     }
 
-    private data class Builder(val builder: () -> JobScheduler.Job)
+    private data class Builder(val builder: () -> Jobs.Job)
 
     companion object {
         private val DATA_JOB = "${AndroidScheduler::class.java}.job"

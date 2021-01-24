@@ -6,7 +6,7 @@ import me.minhael.design.android.AndroidProps
 import me.minhael.design.android.AndroidUriAccessor
 import me.minhael.design.fs.OkUriAccessor
 import me.minhael.design.fs.Uri
-import me.minhael.design.job.JobScheduler
+import me.minhael.design.job.Jobs
 import me.minhael.design.koin.AndroidScheduler
 import me.minhael.design.props.Props
 import me.minhael.design.sl.FstSerializer
@@ -47,7 +47,7 @@ class MainApplication : Application() {
                         }
                         factory<Props> { AndroidProps(androidContext().getSharedPreferences("default", MODE_PRIVATE), get()) }
                         factory<Recorder> { AmrRecorder() }
-                        factory<JobScheduler> { AndroidScheduler(get(), get()) }
+                        factory<Jobs> { AndroidScheduler(get(), get()) }
 
                         single { Storage.from(androidContext()) }
                         single { Schedule(get(), get()) }

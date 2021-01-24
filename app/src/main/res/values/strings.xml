@@ -18,4 +18,6 @@
     <string name="word_folder">Folder</string>
     <string name="word_retry">Retry</string>
     <string name="word_period">Period</string>
+    <string name="word_schedule">Schedule</string>
+    <string name="word_recording">Recording</string>
 </resources>

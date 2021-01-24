@@ -12,23 +12,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="4dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        app:cardCornerRadius="16dp">
+        android:layout_margin="4dp"
+        app:cardCornerRadius="12dp">
 
         <RelativeLayout
+            android:id="@+id/schedule_layout_toggle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp">
+            android:padding="12dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
 
             <TextView
+                style="@style/TextAppearance.MaterialComponents.Body1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="4dp"
                 android:text="@string/phrase_daily_recording"
                 tools:text="Label" />
 
@@ -36,8 +37,6 @@
                 android:id="@+id/schedule_toggle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true" />
 
@@ -49,20 +48,25 @@
         android:layout_width="match_parent"
         android:layout_height="16dp" />
 
+    <TextView
+        style="@style/TextAppearance.MaterialComponents.Caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="@string/word_schedule"/>
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="4dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        app:cardCornerRadius="16dp">
+        android:layout_margin="4dp"
+        app:cardCornerRadius="12dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/schedule_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp"
-            android:clipToPadding="false"/>
+            android:clipToPadding="false" />
 
     </androidx.cardview.widget.CardView>
 

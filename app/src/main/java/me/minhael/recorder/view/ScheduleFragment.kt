@@ -16,7 +16,6 @@ import me.minhael.design.android.TimePickerFragment
 import me.minhael.recorder.R
 import me.minhael.recorder.databinding.FragmentScheduleBinding
 import me.minhael.recorder.databinding.ItemPrefBinding
-import me.minhael.recorder.databinding.ItemPrefToggleBinding
 import org.joda.time.format.DateTimeFormat
 
 class ScheduleFragment : Fragment() {
@@ -31,8 +30,7 @@ class ScheduleFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.isActivate.observe(this) { updateDaily(it) }
-        viewModel.interval.observe(this) { (startTime, duration) -> updateInterval(startTime, duration) }
-        viewModel.periodMs.observe(this) { updatePeriod(it) }
+        viewModel.interval.observe(this) { (startTime, endTime) -> updateInterval(startTime, endTime) }
     }
 
     override fun onCreateView(
@@ -46,16 +44,19 @@ class ScheduleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val lm = LinearLayoutManager(context)
+        val lm = object : LinearLayoutManager(context) {
+            override fun canScrollHorizontally() = false
+            override fun canScrollVertically() = false
+        }
         v.scheduleRecycler.apply {
             layoutManager = lm
             adapter = items
             addItemDecoration(DividerItemDecoration(context, lm.orientation))
             setHasFixedSize(true)
         }
+        v.scheduleLayoutToggle.setOnClickListener { v.scheduleToggle.toggle() }
         updateDaily(false)
         updateInterval(0, 0)
-        updatePeriod(0)
     }
 
     private fun updateDaily(isActivate: Boolean) {
@@ -68,12 +69,12 @@ class ScheduleFragment : Fragment() {
         }
     }
 
-    private fun updateInterval(startTime: Long, duration: Long) {
+    private fun updateInterval(startTime: Long, endTime: Long) {
         val prefStart = ItemAdapter.Item(R.layout.item_pref) {
             ItemPrefBinding.bind(it).apply {
                 itemPrefLabel.setText(R.string.phrase_start_time)
                 itemPrefValue.text = FORMAT_TIME.print(startTime)
-                root.setOnClickListener { selectStartTime(startTime, duration) }
+                root.setOnClickListener { selectStartTime(startTime, endTime) }
             }
         }
         items.update(0, prefStart)
@@ -81,37 +82,27 @@ class ScheduleFragment : Fragment() {
         val prefEnd = ItemAdapter.Item(R.layout.item_pref) {
             ItemPrefBinding.bind(it).apply {
                 itemPrefLabel.setText(R.string.phrase_end_time)
-                itemPrefValue.text = FORMAT_TIME.print(startTime + duration)
-                root.setOnClickListener { selectEndTime(startTime, duration) }
+                itemPrefValue.text = FORMAT_TIME.print(endTime)
+                root.setOnClickListener { selectEndTime(startTime, endTime) }
             }
         }
         items.update(1, prefEnd)
     }
 
-    private fun updatePeriod(period: Long) {
-        val pref = ItemAdapter.Item(R.layout.item_pref) {
-            ItemPrefBinding.bind(it).apply {
-                itemPrefLabel.setText(R.string.word_period)
-                itemPrefValue.text = period.toString()
-            }
-        }
-        items.update(2, pref)
-    }
-
-    private fun selectStartTime(original: Long, duration: Long) {
+    private fun selectStartTime(original: Long, endTime: Long) {
         childFragmentManager.setFragmentResultListener(REQ_KEY_SELECT_START, this) { _, bundle ->
-            viewModel.interval.value = bundle.getLong(TimePickerFragment.RESULT_TIME) to duration
+            viewModel.interval.value = bundle.getLong(TimePickerFragment.RESULT_TIME) to endTime
         }
         TimePickerFragment.newInstance(REQ_KEY_SELECT_START, original).show(childFragmentManager, TAG_TIME_PICKER)
     }
 
     private fun selectEndTime(startTime: Long, original: Long) {
-        childFragmentManager.setFragmentResultListener(REQ_KEY_SELECT_END, this) { key, bundle ->
+        childFragmentManager.setFragmentResultListener(REQ_KEY_SELECT_END, this) { _, bundle ->
             val endTime = bundle.getLong(TimePickerFragment.RESULT_TIME)
 
             //  Error handling for end time boundary
             if (startTime < endTime) {
-                viewModel.interval.value = startTime to endTime - startTime
+                viewModel.interval.value = startTime to endTime
             } else {
                 Snackbar
                     .make(v.root, R.string.msg_schedule_early_end_time, Snackbar.LENGTH_SHORT)
@@ -124,8 +115,7 @@ class ScheduleFragment : Fragment() {
 
     data class ScheduleViewModel(
         val isActivate: MutableLiveData<Boolean> = MutableLiveData(false),
-        val interval: MutableLiveData<Pair<Long, Long>> = MutableLiveData(0L to 0L),
-        val periodMs: MutableLiveData<Long> = MutableLiveData(0)
+        val interval: MutableLiveData<Pair<Long, Long>> = MutableLiveData(0L to 0L)
     ) : ViewModel()
 
     companion object {
