@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_record"
-        android:icon="@drawable/ic_baseline_keyboard_voice_24"
-        android:title="@string/phrase_on_air"
+        android:id="@+id/action_browse"
+        android:icon="@drawable/ic_baseline_folder_24"
+        android:title="@string/word_browse"
         app:showAsAction="always"/>
 
     <item
@@ -16,8 +16,8 @@
 
     <item
         android:id="@+id/action_folder"
-        android:icon="@drawable/ic_baseline_folder_24"
-        android:title="@string/word_folder"
+        android:icon="@drawable/ic_baseline_create_new_folder_24"
+        android:title="@string/phrase_change_folder"
         app:showAsAction="ifRoom"/>
 
     <item

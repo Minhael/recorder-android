@@ -44,6 +44,10 @@ class Schedule(
         scheduler.remove(WORK_ACTIVATE)
     }
 
+    fun manualStop() {
+        scheduler.remove(WORK_DEACTIVATE)
+    }
+
     @KoinApiExtension
     class Activate(private val endTime: Long) : Jobs.Job, KoinComponent {
         override fun execute(): Boolean {

@@ -3,6 +3,7 @@ package me.minhael.design.android
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
 import me.minhael.design.fs.FileSystem
 import me.minhael.design.fs.Uri
@@ -60,11 +61,7 @@ class AndroidFS internal constructor(
     }
 
     override fun toFile(uri: String): File {
-        val u = android.net.Uri.parse(uri) ?: throw IllegalArgumentException("Invalid URI")
-        when (u.scheme) {
-            "file" -> return File(u.path ?: throw IllegalArgumentException("Empty path"))
-            else -> throw IllegalArgumentException("Not a file")
-        }
+        return android.net.Uri.parse(uri).toFile()
     }
 
     companion object {

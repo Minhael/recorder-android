@@ -19,7 +19,8 @@ class Recording(
 
     fun start() {
         Services.start<Recorder>(context, RecorderService::class.java) { recorder ->
-            startRecording(recorder)
+            if (!recorder.isRecording())
+                startRecording(recorder)
         }
     }
 
@@ -46,8 +47,8 @@ class Recording(
     }
 
     private fun stopAndReport(recorder: Recorder) {
-        schedule.deactivate()
         if (recorder.isRecording()) {
+            schedule.manualStop()
             recorder.stop()
             recorder.close()
             output?.apply { export(this) }

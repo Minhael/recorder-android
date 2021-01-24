@@ -27,7 +27,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".component.MainActivity" />
         <activity android:name=".component.RecordActivity" />
         <activity android:name=".component.ScheduleActivity" />
 

@@ -79,6 +79,9 @@ internal class ScheduleTest : AutoCloseKoinTest() {
         verify(jobs).remove(eq(name.firstValue))
         verify(jobs, never()).remove(eq(name.secondValue))
 
+        schedule.manualStop()
+        verify(jobs).remove(eq(name.secondValue))
+
         val aTrigger = trigger.firstValue
         assertTrue(aTrigger is Jobs.Periodic)
         (aTrigger as Jobs.Periodic).apply {
@@ -122,6 +125,9 @@ internal class ScheduleTest : AutoCloseKoinTest() {
         schedule.deactivate()
         verify(jobs).remove(eq(name.firstValue))
         verify(jobs, never()).remove(eq(name.secondValue))
+
+        schedule.manualStop()
+        verify(jobs).remove(eq(name.secondValue))
 
         val aTrigger = trigger.firstValue
         assertTrue(aTrigger is Jobs.Periodic)
