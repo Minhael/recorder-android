@@ -18,14 +18,14 @@ class Recording(
     private var output: String? = null
 
     fun start() {
-        Services.start<Recorder>(context, RecorderService::class.java) { recorder ->
+        Services.startForeground<Recorder>(context, RecorderService::class.java) { recorder ->
             if (!recorder.isRecording())
                 startRecording(recorder)
         }
     }
 
     fun stop() {
-        Services.start<Recorder>(context, RecorderService::class.java) { recorder ->
+        Services.startForeground<Recorder>(context, RecorderService::class.java) { recorder ->
             stopAndReport(recorder)
         }
     }
