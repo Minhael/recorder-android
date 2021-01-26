@@ -18,7 +18,7 @@ import kotlin.math.max
 class AndroidScheduler(private val workManager: WorkManager, private val serializer: Serializer) : Jobs {
 
     override fun set(name: String, trigger: Jobs.Trigger, builder: () -> Jobs.Job) {
-        trigger.visit(provider, name, builder)
+        trigger.visit(scheduler, name, builder)
     }
 
     override fun remove(name: String) {
@@ -26,7 +26,7 @@ class AndroidScheduler(private val workManager: WorkManager, private val seriali
         workManager.cancelUniqueWork(name)
     }
 
-    private val provider = object : Jobs.TriggerProvider {
+    private val scheduler = object : Jobs.Scheduler {
         override fun setup(
             trigger: Jobs.Trigger,
             name: String,

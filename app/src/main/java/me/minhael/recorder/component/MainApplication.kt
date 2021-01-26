@@ -38,7 +38,7 @@ class MainApplication : Application() {
                     module {
                         factory { WorkManager.getInstance(androidContext()) }
 
-                        single<Serializer> { FstSerializer { FstSerializer.forK() } }
+                        single<Serializer> { FstSerializer { FstSerializer.default() } }
                         factory {
                             Uri.Resolver(
                                 AndroidUriAccessor(androidContext().contentResolver),

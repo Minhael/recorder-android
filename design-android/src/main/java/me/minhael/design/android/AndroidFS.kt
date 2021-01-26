@@ -2,6 +2,7 @@ package me.minhael.design.android
 
 import android.content.Context
 import android.os.Build
+import android.system.Os
 import androidx.annotation.RequiresApi
 import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
@@ -46,11 +47,24 @@ class AndroidFS internal constructor(
     }
 
     override fun browse(uri: String): FileSystem {
-        TODO("Not yet implemented")
+        return base(context, android.net.Uri.parse(uri))
     }
 
     override fun root(): String {
         return root.uri.toString()
+    }
+
+    override fun space(): FileSystem.Space {
+        return context.contentResolver.openFileDescriptor(root.uri, "r")
+            ?.use { Os.fstatvfs(it.fileDescriptor) }
+            ?.run {
+                FileSystem.Space(
+                    (f_blocks - f_bfree) * f_bsize,
+                    f_bavail * f_bsize,
+                    f_blocks * f_bsize
+                )
+            }
+            ?: FileSystem.Space(0, Long.MAX_VALUE, Long.MAX_VALUE)
     }
 
     override fun peek(uri: String): FileSystem.Meta {
