@@ -59,6 +59,11 @@ class ScheduleFragment : Fragment() {
         updateInterval(0, 0)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _v = null
+    }
+
     private fun updateDaily(isActivate: Boolean) {
         v.scheduleToggle.apply {
             setOnCheckedChangeListener(null)

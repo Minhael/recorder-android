@@ -11,6 +11,7 @@ import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.Serializable
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
@@ -130,7 +131,7 @@ class AndroidScheduler(private val workManager: WorkManager, private val seriali
         }
     }
 
-    private data class Builder(val builder: () -> Jobs.Job)
+    private data class Builder(val builder: () -> Jobs.Job): Serializable
 
     companion object {
         private val DATA_JOB = "${AndroidScheduler::class.java}.job"

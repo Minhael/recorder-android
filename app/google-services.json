@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "343292546962",
+    "project_id": "just-a-recorder",
+    "storage_bucket": "just-a-recorder.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:343292546962:android:5d1092166f108476aebb4b",
+        "android_client_info": {
+          "package_name": "me.minhael.recorder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "343292546962-h070t1un69cari1of531k7g8anniana2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.minhael.recorder",
+            "certificate_hash": "1e22577a34d3170e37f77112c40c8515694bb18c"
+          }
+        },
+        {
+          "client_id": "343292546962-pjm1iggr0vcb4r8ju7prqi06sqtjrp6k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpCmKn1BFmOGAajM9WWzT7alFjEYNw--U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "343292546962-pjm1iggr0vcb4r8ju7prqi06sqtjrp6k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
