@@ -20,7 +20,9 @@ class RecorderFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.level.observe(this) { v.recorderValue.text = it.toString() }
+        viewModel.measure.observe(this) { v.recorderTvValue.text = it.toString() }
+        viewModel.average.observe(this) { v.recorderTvAverage.text = it.toString() }
+        viewModel.max.observe(this) { v.recorderTvMax.text = it.toString() }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -30,10 +32,6 @@ class RecorderFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        v.recorderBtn.text = "Crash"
-        v.recorderBtn.setOnClickListener {
-            throw RuntimeException("Test Crash")
-        }
     }
 
     override fun onDestroyView() {
@@ -42,6 +40,8 @@ class RecorderFragment: Fragment() {
     }
 
     data class RecorderViewModel(
-        val level: MutableLiveData<Int> = MutableLiveData(0)
+        val measure: MutableLiveData<Int> = MutableLiveData(0),
+        val average: MutableLiveData<Int> = MutableLiveData(0),
+        val max: MutableLiveData<Int> = MutableLiveData(0)
     ) : ViewModel()
 }

@@ -66,6 +66,7 @@ class Schedule(
         override fun execute(): Boolean {
             val recording: Recording by inject()
             recording.stop()
+            recording.save()
             return true
         }
     }

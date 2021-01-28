@@ -2,7 +2,7 @@
 buildscript {
     ext.kotlin_version = "1.4.21"
     ext.koin_version = '2.2.2'
-    ext.design_version = '1.0.0'
+    ext.design_version = '1.0.1'
     ext.work_version = "2.4.0"
     repositories {
         google()

@@ -14,7 +14,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.minhael.design.android.AndroidFS
-import me.minhael.design.android.BoundService
 import me.minhael.design.android.Documents
 import me.minhael.design.android.Services
 import me.minhael.design.props.Props
@@ -116,11 +115,15 @@ class RecorderActivity : AppCompatActivity() {
         if (isRecording) {
             job?.cancel()
             job = lifecycleScope.launch {
-                BoundService.start<Measurable>(this@RecorderActivity, RecorderService::class.java).use { service ->
-                    while (isActive) {
-                        recorderViewModel.level.value = service.api.soundLevel()
-                        delay(props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT))
+                while (isActive) {
+                    recorderViewModel.apply {
+                        recording.levels.also {
+                            measure.value = it.measure
+                            average.value = it.average
+                            max.value = it.max
+                        }
                     }
+                    delay(props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT))
                 }
             }
         } else {

@@ -24,12 +24,14 @@ class AndroidFS internal constructor(
             ?: throw IOException("Failed to create file")
     }
 
-    override fun copy(inputStream: InputStream, mimeType: String, filename: String): Long {
-        return resolver.writeTo(create(mimeType, filename)).use { output ->
-            try {
-                IOUtils.copyLarge(inputStream, output)
-            } finally {
-                output.flush()
+    override fun copy(inputStream: InputStream, mimeType: String, filename: String): String {
+        return create(mimeType, filename).also {
+            resolver.writeTo(it).use { output ->
+                try {
+                    IOUtils.copyLarge(inputStream, output)
+                } finally {
+                    output.flush()
+                }
             }
         }
     }

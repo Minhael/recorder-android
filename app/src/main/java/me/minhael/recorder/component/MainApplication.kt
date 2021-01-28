@@ -10,6 +10,7 @@ import me.minhael.design.job.Jobs
 import me.minhael.design.koin.AndroidScheduler
 import me.minhael.design.props.Props
 import me.minhael.design.sl.FstSerializer
+import me.minhael.design.sl.JacksonSerializer
 import me.minhael.design.sl.Serializer
 import me.minhael.recorder.*
 import me.minhael.recorder.service.Recording
@@ -20,6 +21,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.component.KoinApiExtension
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
@@ -38,7 +40,9 @@ class MainApplication : Application() {
                     module {
                         factory { WorkManager.getInstance(androidContext()) }
 
+                        single<Serializer>(named("json")) { JacksonSerializer { JacksonSerializer.default() } }
                         single<Serializer> { FstSerializer { FstSerializer.default() } }
+
                         factory {
                             Uri.Resolver(
                                 AndroidUriAccessor(androidContext().contentResolver),
@@ -51,7 +55,7 @@ class MainApplication : Application() {
 
                         single { Storage.from(androidContext()) }
                         single { Schedule(get(), get()) }
-                        single { Recording(androidContext(), get(), get(), get()) }
+                        single { Recording(androidContext(), get(), get(), get(), get(), get(named("json"))) }
                     }
                 )
             )

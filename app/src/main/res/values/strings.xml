@@ -22,4 +22,6 @@
     <string name="word_schedule">Schedule</string>
     <string name="word_recording">Recording</string>
     <string name="word_browse">Browse</string>
+    <string name="word_average">Average</string>
+    <string name="word_max">Maximum</string>
 </resources>
