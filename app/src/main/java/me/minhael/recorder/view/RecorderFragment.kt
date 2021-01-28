@@ -20,7 +20,7 @@ class RecorderFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.lastDb.observe(this) {  }
+        viewModel.level.observe(this) { v.recorderValue.text = it.toString() }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -42,6 +42,6 @@ class RecorderFragment: Fragment() {
     }
 
     data class RecorderViewModel(
-        val lastDb: MutableLiveData<Long> = MutableLiveData(0)
+        val level: MutableLiveData<Int> = MutableLiveData(0)
     ) : ViewModel()
 }

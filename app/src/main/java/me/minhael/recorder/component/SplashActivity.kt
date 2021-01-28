@@ -64,7 +64,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun proceed() {
-        startActivity(Intent(this, RecordActivity::class.java))
+        startActivity(Intent(this, RecorderActivity::class.java))
         finish()
     }
 

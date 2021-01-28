@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".component.RecordActivity" />
+        <activity android:name=".component.RecorderActivity" />
         <activity android:name=".component.ScheduleActivity" />
 
         <service android:name=".component.RecorderService" android:foregroundServiceType="microphone" />

@@ -7,27 +7,35 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import me.minhael.design.android.AndroidFS
+import me.minhael.design.android.BoundService
 import me.minhael.design.android.Documents
 import me.minhael.design.android.Services
 import me.minhael.design.props.Props
-import me.minhael.recorder.Permissions
-import me.minhael.recorder.PropTags
-import me.minhael.recorder.R
-import me.minhael.recorder.Recorder
+import me.minhael.recorder.*
 import me.minhael.recorder.databinding.ActivityRecordBinding
 import me.minhael.recorder.service.Recording
 import me.minhael.recorder.service.Storage
+import me.minhael.recorder.view.RecorderFragment
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class RecordActivity : AppCompatActivity() {
+class RecorderActivity : AppCompatActivity() {
 
     private val props: Props by inject()
     private val storage: Storage by inject()
     private val recording: Recording by inject()
 
+    private val recorderViewModel: RecorderFragment.RecorderViewModel by viewModel()
     private lateinit var v: ActivityRecordBinding
+
+    private var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,31 +43,13 @@ class RecordActivity : AppCompatActivity() {
         setContentView(v.root)
         setSupportActionBar(v.recordToolbar)
 
-        Services.start<Recorder>(this, RecorderService::class.java) {
-            v.recordFab.setImageDrawable(
-                ContextCompat.getDrawable(
-                    applicationContext,
-                    if (it.isRecording())
-                        R.drawable.ic_baseline_stop_24
-                    else
-                        R.drawable.ic_baseline_mic_24
-                )
-            )
-        }
+        Services.start<Recorder>(this, RecorderService::class.java) { updateViews(it.isRecording()) }
 
         v.recordFab.setOnClickListener {
             v.recordFab.isEnabled = false
 
             recording.toggle {
-                v.recordFab.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        applicationContext,
-                        if (it)
-                            R.drawable.ic_baseline_stop_24
-                        else
-                            R.drawable.ic_baseline_mic_24
-                    )
-                )
+                updateViews(it)
                 v.recordFab.isEnabled = true
             }
         }
@@ -109,6 +99,32 @@ class RecordActivity : AppCompatActivity() {
                     .make(v.root, R.string.msg_permissions_not_granted, Snackbar.LENGTH_SHORT)
                     .setAction(R.string.word_retry) { grantPermissions() }
                     .show()
+        }
+    }
+
+    private fun updateViews(isRecording: Boolean) {
+        v.recordFab.setImageDrawable(
+            ContextCompat.getDrawable(
+                applicationContext,
+                if (isRecording)
+                    R.drawable.ic_baseline_stop_24
+                else
+                    R.drawable.ic_baseline_mic_24
+            )
+        )
+
+        if (isRecording) {
+            job?.cancel()
+            job = lifecycleScope.launch {
+                BoundService.start<Measurable>(this@RecorderActivity, RecorderService::class.java).use { service ->
+                    while (isActive) {
+                        recorderViewModel.level.value = service.api.soundLevel()
+                        delay(props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT))
+                    }
+                }
+            }
+        } else {
+            job?.cancel()
         }
     }
 }

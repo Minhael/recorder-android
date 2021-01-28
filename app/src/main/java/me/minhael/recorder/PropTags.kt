@@ -1,7 +1,5 @@
 package me.minhael.recorder
 
-import androidx.work.PeriodicWorkRequest
-
 object PropTags {
     const val DIR_RECORDING = "dir.recording"
 
@@ -16,4 +14,7 @@ object PropTags {
 
     const val RECORDING_PERIOD_MS = "recording.period.ms"
     const val RECORDING_PERIOD_MS_DEFAULT = 24 * 60 * 60 * 1000L
+
+    const val MEASURE_PERIOD_UPDATE_MS = "measure.period.update.ms"
+    const val MEASURE_PERIOD_UPDATE_MS_DEFAULT = 500L
 }

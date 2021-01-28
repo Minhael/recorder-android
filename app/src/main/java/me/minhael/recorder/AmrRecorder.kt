@@ -3,8 +3,9 @@ package me.minhael.recorder
 import android.media.MediaRecorder
 import me.minhael.design.fs.FileSystem
 import org.slf4j.LoggerFactory
+import kotlin.math.log10
 
-class AmrRecorder: Recorder {
+class AmrRecorder: Recorder, Measurable {
 
     private val recorder = MediaRecorder()
 
@@ -48,7 +49,20 @@ class AmrRecorder: Recorder {
         recorder.release()
     }
 
+    //  https://stackoverflow.com/questions/10655703/what-does-androids-getmaxamplitude-function-for-the-mediarecorder-actually-gi
+    override fun soundLevel(): Int {
+        return recorder.maxAmplitude.let {
+            if (it > 0)
+                (20 * log10(it / d / p0)).toInt()
+            else
+                0
+        }
+    }
+
     companion object {
         private val logger = LoggerFactory.getLogger(AmrRecorder::class.java)
+
+        private const val p0 = 0.0002
+        private const val d = 51805.5336
     }
 }

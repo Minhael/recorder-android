@@ -7,6 +7,7 @@ import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import me.minhael.design.fs.FileSystem
+import me.minhael.recorder.Measurable
 import me.minhael.recorder.R
 import me.minhael.recorder.Recorder
 import org.koin.android.ext.android.inject
@@ -25,7 +26,7 @@ class RecorderService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_NOTIFICATION -> startActivity(
-                Intent(applicationContext, RecordActivity::class.java).apply {
+                Intent(applicationContext, RecorderActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
             )
@@ -71,7 +72,7 @@ class RecorderService : Service() {
         stopForeground(true)
     }
 
-    inner class RecorderBinder : Recorder, Binder() {
+    inner class RecorderBinder : Recorder, Measurable, Binder() {
 
         override fun record(fs: FileSystem, filename: String): String {
             stop()
@@ -93,6 +94,10 @@ class RecorderService : Service() {
 
         override fun close() {
             stopSelf()
+        }
+
+        override fun soundLevel(): Int {
+            return (recorder as? Measurable)?.soundLevel() ?: 0
         }
     }
 
