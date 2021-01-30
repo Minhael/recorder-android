@@ -36,20 +36,36 @@ class AndroidFS internal constructor(
         }
     }
 
-    override fun delete(filename: String): Boolean {
-        return root.findFile(filename)?.delete() ?: true
-    }
-
     override fun list(): List<String> {
         return root.listFiles().filter { it.isFile }.map { it.uri.toString() }
+    }
+
+    override fun peek(uri: String): FileSystem.Meta? {
+        return assertFile(uri)?.takeIf { it.isFile }?.let { fetchMeta(it) }
+    }
+
+    override fun delete(uri: String): Boolean {
+        return assertFile(uri)?.takeIf { it.isFile }?.delete() ?: true
+    }
+
+    override fun createDir(dirname: String): FileSystem {
+        return AndroidFS(
+            context,
+            resolver,
+            root.createDirectory(dirname) ?: throw IOException("Failed to create directory")
+        )
     }
 
     override fun listDir(): List<String> {
         return root.listFiles().filter { it.isDirectory }.map { it.uri.toString() }
     }
 
-    override fun browse(uri: String): FileSystem {
-        return base(context, android.net.Uri.parse(uri))
+    override fun browse(uri: String): FileSystem? {
+        return assertFile(uri)?.takeIf { it.isDirectory }?.let { AndroidFS(context, resolver, it) }
+    }
+
+    override fun deleteDir(uri: String): Boolean {
+        return assertFile(uri)?.takeIf { it.isDirectory }?.delete() ?: true
     }
 
     override fun root(): String {
@@ -69,20 +85,20 @@ class AndroidFS internal constructor(
             ?: FileSystem.Space(0, Long.MAX_VALUE, Long.MAX_VALUE)
     }
 
-    override fun peek(uri: String): FileSystem.Meta {
-        return fetchMeta(
-            DocumentFile.fromSingleUri(context, android.net.Uri.parse(uri))
-                ?: throw IllegalArgumentException("> KITKAT")
-        )
-    }
-
     override fun toFile(uri: String): File {
         return android.net.Uri.parse(uri).toFile()
     }
 
+    private fun assertFile(uri: String): DocumentFile? {
+        val file = DocumentFile
+            .fromSingleUri(context, android.net.Uri.parse(uri))
+            ?: throw IllegalArgumentException("> KITKAT")
+        return file.name?.let { root.findFile(it) }?.takeIf { it.uri == file.uri }
+    }
+
     companion object {
 
-        fun base(context: Context, file: File): AndroidFS {
+        @JvmStatic fun base(context: Context, file: File): AndroidFS {
             if (!file.exists() && !file.mkdirs())
                 throw IOException("Failed to use directory as root")
             return AndroidFS(
@@ -92,25 +108,35 @@ class AndroidFS internal constructor(
             )
         }
 
+        @JvmStatic
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-        fun base(context: Context, treeUri: android.net.Uri): AndroidFS {
-            val root = DocumentFile.fromTreeUri(context, treeUri) ?: throw IllegalStateException("API < 21")
-            if (!root.exists())
-                throw IOException("Failed to use URI as root")
-            return AndroidFS(
-                context,
-                Uri.Resolver(AndroidUriAccessor(context.contentResolver)),
-                root
-            )
+        fun base(
+            context: Context,
+            treeUri: String,
+            resolver: Uri.Resolver = Uri.Resolver(AndroidUriAccessor(context.contentResolver))
+        ) = base(context, android.net.Uri.parse(treeUri), resolver)
+
+        @JvmStatic
+        @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+        fun base(
+            context: Context,
+            treeUri: android.net.Uri,
+            resolver: Uri.Resolver = Uri.Resolver(AndroidUriAccessor(context.contentResolver))
+        ): AndroidFS {
+            val root = fromUri(context, treeUri)
+
+            if (!root.exists() || !root.isDirectory)
+                throw IOException("$treeUri is not a directory")
+
+            return AndroidFS(context, resolver, root)
+        }
+
+        private fun fromUri(context: Context, treeUri: android.net.Uri): DocumentFile {
+            return DocumentFile.fromTreeUri(context, treeUri) ?: throw IllegalStateException("API < 21")
         }
 
         private fun fetchMeta(doc: DocumentFile): FileSystem.Meta {
-            return FileSystem.Meta(
-                doc.uri.toString(),
-                doc.name,
-                doc.type,
-                doc.length()
-            )
+            return FileSystem.Meta(doc.uri.toString(), doc.name ?: "", doc.type, doc.length())
         }
     }
 }

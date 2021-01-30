@@ -41,7 +41,7 @@ class MainApplication : Application() {
                         factory { WorkManager.getInstance(androidContext()) }
 
                         single<Serializer>(named("json")) { JacksonSerializer { JacksonSerializer.default() } }
-                        single<Serializer> { FstSerializer { FstSerializer.default() } }
+                        single<Serializer> { FstSerializer() }
 
                         factory {
                             Uri.Resolver(

@@ -42,7 +42,7 @@ class SplashActivity : AppCompatActivity() {
             try {
                 storage.dirPublic = AndroidFS.base(
                     applicationContext,
-                    Uri.parse(props.get(PropTags.DIR_RECORDING, storage.dirPublic.root()))
+                    props.get(PropTags.DIR_RECORDING, storage.dirPublic.root())
                 )
                 proceed()
             } catch(e: IOException) {

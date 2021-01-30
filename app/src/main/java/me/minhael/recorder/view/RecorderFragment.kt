@@ -40,6 +40,7 @@ class RecorderFragment: Fragment() {
     }
 
     data class RecorderViewModel(
+        val duration: MutableLiveData<Long> = MutableLiveData(0),
         val measure: MutableLiveData<Int> = MutableLiveData(0),
         val average: MutableLiveData<Int> = MutableLiveData(0),
         val max: MutableLiveData<Int> = MutableLiveData(0)

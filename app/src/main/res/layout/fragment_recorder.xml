@@ -3,94 +3,157 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="12dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/recorder_tv_value"
-        style="@style/TextAppearance.MaterialComponents.Headline1"
-        android:layout_width="wrap_content"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView3"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:cardElevation="8dp"
         app:layout_constraintBottom_toTopOf="@+id/cardView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="60" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/recorder_tv_average"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        app:layout_constraintBottom_toTopOf="@+id/recorder_tv_value"
-        app:layout_constraintEnd_toEndOf="@+id/textView4"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/textView4"
-        app:layout_constraintTop_toBottomOf="@+id/textView4"
-        tools:text="40" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/recorder_tv_max"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        app:layout_constraintBottom_toTopOf="@+id/recorder_tv_value"
-        app:layout_constraintEnd_toEndOf="@+id/textView5"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/textView5"
-        app:layout_constraintTop_toBottomOf="@+id/textView5"
-        tools:text="90" />
+            <TextView
+                style="@style/TextAppearance.MaterialComponents.Caption"
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/word_average"
+                app:layout_constraintBottom_toTopOf="@+id/recorder_tv_average"
+                app:layout_constraintEnd_toEndOf="@+id/recorder_tv_average"
+                app:layout_constraintStart_toStartOf="@+id/recorder_tv_average" />
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/word_average"
-        app:layout_constraintBottom_toTopOf="@+id/recorder_tv_average"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:layout_constraintVertical_chainStyle="packed" />
+            <TextView
+                style="@style/TextAppearance.MaterialComponents.Headline6"
+                android:id="@+id/recorder_tv_average"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/recorder_tv_value"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/recorder_tv_value"
+                tools:text="40" />
 
-    <TextView
-        android:id="@+id/textView5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/word_max"
-        app:layout_constraintBottom_toTopOf="@+id/recorder_tv_max"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:layout_constraintVertical_chainStyle="packed" />
+            <TextView
+                android:id="@+id/recorder_tv_value"
+                style="@style/TextAppearance.MaterialComponents.Headline1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="60" />
+
+            <TextView
+                style="@style/TextAppearance.MaterialComponents.Caption"
+                android:id="@+id/textView5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/word_max"
+                app:layout_constraintBottom_toTopOf="@+id/recorder_tv_max"
+                app:layout_constraintEnd_toEndOf="@+id/recorder_tv_max"
+                app:layout_constraintStart_toStartOf="@+id/recorder_tv_max" />
+
+            <TextView
+                style="@style/TextAppearance.MaterialComponents.Headline6"
+                android:id="@+id/recorder_tv_max"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/recorder_tv_value"
+                app:layout_constraintTop_toTopOf="@+id/recorder_tv_value"
+                tools:text="90" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
         app:layout_constraintBottom_toTopOf="@+id/cardView"
-        app:layout_constraintTop_toBottomOf="@+id/recorder_tv_value"
-        app:layout_constraintVertical_weight="1"
-        tools:layout_editor_absoluteX="202dp">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView3"
+        app:layout_constraintVertical_weight="1" >
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="120dp" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/textView"
+                style="@style/TextAppearance.MaterialComponents.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/phrase_start_time"
+                app:layout_constraintBaseline_toBaselineOf="@+id/recorder_tv_start_time"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/recorder_tv_duration"
+                style="@style/TextAppearance.MaterialComponents.Body1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="12dp"
+                android:text="00:00:00"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="88:88:88" />
+
+            <TextView
+                android:id="@+id/recorder_tv_start_time"
+                style="@style/TextAppearance.MaterialComponents.Body1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="01/01 08:00:00"
+                app:layout_constraintBaseline_toBaselineOf="@+id/textView6"
+                app:layout_constraintStart_toEndOf="@+id/textView"
+                tools:text="88/88 88:88:88" />
+
+            <TextView
+                android:id="@+id/textView6"
+                style="@style/TextAppearance.MaterialComponents.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="@string/word_duration"
+                app:layout_constraintBaseline_toBaselineOf="@+id/recorder_tv_duration"
+                app:layout_constraintEnd_toStartOf="@+id/recorder_tv_duration"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/recorder_tv_start_time" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="88dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="142dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardView2"
-        app:layout_constraintVertical_weight="1"
-        tools:layout_editor_absoluteX="12dp">
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="120dp" />
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintVertical_weight="1" />
 </androidx.constraintlayout.widget.ConstraintLayout>

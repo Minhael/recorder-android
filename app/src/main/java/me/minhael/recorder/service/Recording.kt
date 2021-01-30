@@ -6,7 +6,6 @@ import me.minhael.design.android.BoundService
 import me.minhael.design.android.Services
 import me.minhael.design.fs.Uri
 import me.minhael.design.props.Props
-import me.minhael.design.sl.JacksonSerializer
 import me.minhael.design.sl.Serializer
 import me.minhael.recorder.Measurable
 import me.minhael.recorder.PropTags
@@ -69,10 +68,13 @@ class Recording(
     private fun startRecording(recorder: Recorder) {
         stopRecording(recorder)
 
-        val session = Session(recorder.record(storage.dirCache, "Record@${FORMAT_TIME.print(DateTime())}"))
+        val delayMs = props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT)
+        val session = Session(
+            recorder.record(storage.dirCache, FORMAT_TIME.print(DateTime())),
+            delayMs
+        )
 
         job = scope.launch {
-            val delayMs = props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT)
             BoundService.startForeground<Measurable>(context, RecorderService::class.java).use { service ->
 
                 //  Delay 2 seconds to avoid sound produced by phone vibration
@@ -117,29 +119,29 @@ class Recording(
     }
 
     private fun save(session: Session) {
-        val filename = "Record@${FORMAT_TIME.print(session.startTime)}"
+        val pattern = props.get(PropTags.RECORDING_FILE_PATTERN, PropTags.RECORDING_FILE_PATTERN_DEFAULT)
+        val filename = DateTimeFormat.forPattern(pattern).print(session.startTime)
 
-        //  Copy the audio file
         scope.launch {
-            launch(Dispatchers.IO) {
+
+            //  Copy the audio file
+            val uri = async(Dispatchers.IO) {
                 resolver.readFrom(session.uri).use {
-                    storage.dirPublic.copy(
-                        it,
-                        "audio/amr",
-                        android.net.Uri.parse(session.uri).lastPathSegment ?: filename
-                    )
+                    storage.dirPublic.copy(it, "audio/amr", filename)
                 }
             }
-            storage.dirCache.delete(session.uri)
-        }
 
-        //  Write report
-        scope.launch {
+            val report = Session(uri.await(), session.interval, session.startTime, session.levels, session.pulses)
+
+            //  Write report
             launch(Dispatchers.IO) {
-                resolver.writeTo(storage.dirPublic.create("application/json", filename)).use {
-                    serializer.serialize(session, it)
+                resolver.writeTo(storage.dirPublic.create("application/json", "$filename.json")).use {
+                    serializer.serialize(report, it)
                 }
             }
+
+            //  Remove cache
+            storage.dirCache.delete(session.uri)
         }
     }
 
@@ -156,6 +158,7 @@ class Recording(
 
     private data class Session(
         val uri: String,
+        val interval: Long,
         val startTime: Long = System.currentTimeMillis(),
         val levels: MutableList<Int> = mutableListOf(),
         val pulses: MutableList<Pulse> = mutableListOf()

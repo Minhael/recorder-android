@@ -9,9 +9,9 @@
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/action_timer"
-        android:icon="@drawable/ic_baseline_timer_24"
-        android:title="@string/word_timer"
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_baseline_settings_24"
+        android:title="@string/word_settings"
         app:showAsAction="always"/>
 
     <item

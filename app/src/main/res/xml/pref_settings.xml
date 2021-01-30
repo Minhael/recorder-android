@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="@string/key_recording"
+        app:title="@string/word_recording">
+
+        <EditTextPreference
+            app:key="@string/key_recording_file_pattern"
+            app:title="@string/phrase_filename_pattern" />
+
+        <ListPreference
+            app:key="@string/key_recording_graphing_period"
+            app:title="@string/phrase_graph_update_period"
+            app:entries="@array/const_graphing_periods"
+            app:entryValues="@array/const_graphing_periods"/>
+
+    </PreferenceCategory>
+
+    <SwitchPreferenceCompat
+        app:key="@string/key_recording_daily"
+        app:title="@string/phrase_daily_recording"/>
+
+    <PreferenceCategory
+        app:key="@string/key_schedule"
+        app:title="@string/word_schedule"
+        app:dependency="@string/key_recording_daily">
+
+        <Preference
+            app:key="@string/key_schedule_start_time"
+            app:title="@string/phrase_start_time" />
+
+        <Preference
+            app:key="@string/key_schedule_end_time"
+            app:title="@string/phrase_end_time" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

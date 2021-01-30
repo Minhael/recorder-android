@@ -83,7 +83,7 @@ class RecorderService : Service() {
         override fun stop() {
             if (recorder.isRecording()) {
                 recorder.stop()
-                startForeground(ONGOING_NOTIFICATION_ID, buildNotification(R.string.msg_saving))
+                startForeground(ONGOING_NOTIFICATION_ID, buildNotification(R.string.msg_stopping))
                 stopForeground()
             }
         }

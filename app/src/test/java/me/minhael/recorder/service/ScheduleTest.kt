@@ -39,7 +39,7 @@ internal class ScheduleTest : AutoCloseKoinTest() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        `when`(props.get(eq(PropTags.RECORDING_PERIOD_MS), any())).thenReturn(PropTags.RECORDING_PERIOD_MS_DEFAULT)
+        `when`(props.get(eq(PropTags.SCHEDULE_PERIOD_MS), any())).thenReturn(PropTags.SCHEDULE_PERIOD_MS_DEFAULT)
 
         startKoin { modules(module) }
     }
@@ -53,8 +53,8 @@ internal class ScheduleTest : AutoCloseKoinTest() {
     fun activate() {
         DateTimeUtils.setCurrentMillisFixed(sameDay)
 
-        `when`(props.get(eq(PropTags.RECORDING_TIME_START), any())).thenReturn(PropTags.RECORDING_TIME_START_DEFAULT)
-        `when`(props.get(eq(PropTags.RECORDING_TIME_END), any())).thenReturn(PropTags.RECORDING_TIME_END_DEFAULT)
+        `when`(props.get(eq(PropTags.SCHEDULE_TIME_START), any())).thenReturn(PropTags.SCHEDULE_TIME_START_DEFAULT)
+        `when`(props.get(eq(PropTags.SCHEDULE_TIME_END), any())).thenReturn(PropTags.SCHEDULE_TIME_END_DEFAULT)
 
         val schedule = Schedule(props, jobs)
         val name = argumentCaptor<String>()
@@ -84,8 +84,8 @@ internal class ScheduleTest : AutoCloseKoinTest() {
         assertTrue(aTrigger is Jobs.Periodic)
         (aTrigger as Jobs.Periodic).apply {
             assertEquals(sameStart, timestamp)
-            assertEquals(PropTags.RECORDING_PERIOD_MS_DEFAULT, periodMs)
-            assertEquals(PropTags.RECORDING_PERIOD_MS_DEFAULT, flexMs)
+            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, periodMs)
+            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, flexMs)
         }
 
         val bTrigger = trigger.secondValue
@@ -100,8 +100,8 @@ internal class ScheduleTest : AutoCloseKoinTest() {
     fun activateNextDay() {
         DateTimeUtils.setCurrentMillisFixed(nextDay)
 
-        `when`(props.get(eq(PropTags.RECORDING_TIME_START), any())).thenReturn(PropTags.RECORDING_TIME_START_DEFAULT)
-        `when`(props.get(eq(PropTags.RECORDING_TIME_END), any())).thenReturn(PropTags.RECORDING_TIME_END_DEFAULT)
+        `when`(props.get(eq(PropTags.SCHEDULE_TIME_START), any())).thenReturn(PropTags.SCHEDULE_TIME_START_DEFAULT)
+        `when`(props.get(eq(PropTags.SCHEDULE_TIME_END), any())).thenReturn(PropTags.SCHEDULE_TIME_END_DEFAULT)
 
         val schedule = Schedule(props, jobs)
         val name = argumentCaptor<String>()
@@ -131,8 +131,8 @@ internal class ScheduleTest : AutoCloseKoinTest() {
         assertTrue(aTrigger is Jobs.Periodic)
         (aTrigger as Jobs.Periodic).apply {
             assertEquals(nextStart, timestamp)
-            assertEquals(PropTags.RECORDING_PERIOD_MS_DEFAULT, periodMs)
-            assertEquals(PropTags.RECORDING_PERIOD_MS_DEFAULT, flexMs)
+            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, periodMs)
+            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, flexMs)
         }
 
         val bTrigger = trigger.secondValue

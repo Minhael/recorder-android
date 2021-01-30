@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.math.max
+import org.slf4j.LoggerFactory
 
 class Schedule(
     private val props: Props,
@@ -18,7 +18,11 @@ class Schedule(
     fun activate() {
         val now = DateTime()
 
-        val startTime = DateTime(props.get(PropTags.RECORDING_TIME_START, PropTags.RECORDING_TIME_START_DEFAULT))
+        val startTime = DateTime(props.get(PropTags.SCHEDULE_TIME_START, PropTags.SCHEDULE_TIME_START_DEFAULT))
+        val endTime = DateTime(props.get(PropTags.SCHEDULE_TIME_END, PropTags.SCHEDULE_TIME_END_DEFAULT))
+
+        logger.debug("Schedule settings\nStartTime = {}\nEndTime = {}\nDuration = {}", startTime, endTime)
+
         val nextStart = now
             .withHourOfDay(startTime.hourOfDay)
             .withMinuteOfHour(startTime.minuteOfHour)
@@ -30,14 +34,21 @@ class Schedule(
                 else
                     it
             }
+        val nextEnd = nextStart
+            .withHourOfDay(endTime.hourOfDay)
+            .withMinuteOfHour(endTime.minuteOfHour)
+            .let {
+                if (it.isBefore(nextStart))
+                    it.plusDays(1)
+                else
+                    it
+            }
+        val duration = nextEnd.millis - nextStart.millis
+        val periodMs = props.get(PropTags.SCHEDULE_PERIOD_MS, PropTags.SCHEDULE_PERIOD_MS_DEFAULT)
 
-        val nextEnd = DateTime(props.get(PropTags.RECORDING_TIME_END, PropTags.RECORDING_TIME_END_DEFAULT)).run {
-            nextStart.plus(max(0, millis - startTime.millis))
-        }
+        logger.debug("Computed schedule\nNextStart = {}\nNextEnd = {}\nDuration = {} Period = {}", nextStart, nextEnd, duration, periodMs)
 
-        val periodMs = props.get(PropTags.RECORDING_PERIOD_MS, PropTags.RECORDING_PERIOD_MS_DEFAULT)
-
-        scheduler.set(WORK_ACTIVATE, Jobs.Periodic(nextStart.millis, periodMs)) { Activate(nextEnd.millis) }
+        scheduler.set(WORK_ACTIVATE, Jobs.Periodic(nextStart.millis, periodMs)) { Activate(duration) }
     }
 
     fun deactivate() {
@@ -49,12 +60,14 @@ class Schedule(
     }
 
     @KoinApiExtension
-    class Activate(private val endTime: Long) : Jobs.Job, KoinComponent {
+    class Activate(private val duration: Long) : Jobs.Job, KoinComponent {
         override fun execute(): Boolean {
+            logger.info("Start recording in background")
+
             val scheduler: Jobs by inject()
             val recording: Recording by inject()
 
-            scheduler.set(WORK_DEACTIVATE, Jobs.OneShot(endTime)) { Deactivate() }
+            scheduler.set(WORK_DEACTIVATE, Jobs.OneShot(System.currentTimeMillis() + duration)) { Deactivate() }
             recording.start()
 
             return true
@@ -64,6 +77,8 @@ class Schedule(
     @KoinApiExtension
     class Deactivate : Jobs.Job, KoinComponent {
         override fun execute(): Boolean {
+            logger.info("End background recording")
+
             val recording: Recording by inject()
             recording.stop()
             recording.save()
@@ -74,5 +89,7 @@ class Schedule(
     companion object {
         private val WORK_ACTIVATE = "${Schedule::class.simpleName}.activate"
         private val WORK_DEACTIVATE = "${Schedule::class.simpleName}.deactivate"
+
+        private val logger = LoggerFactory.getLogger(Schedule::class.java)
     }
 }

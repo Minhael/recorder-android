@@ -42,8 +42,6 @@ class RecorderActivity : AppCompatActivity() {
         setContentView(v.root)
         setSupportActionBar(v.recordToolbar)
 
-        Services.start<Recorder>(this, RecorderService::class.java) { updateViews(it.isRecording()) }
-
         v.recordFab.setOnClickListener {
             v.recordFab.isEnabled = false
 
@@ -54,6 +52,11 @@ class RecorderActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        Services.start<Recorder>(this, RecorderService::class.java) { updateViews(it.isRecording()) }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.action_record, menu)
         return super.onCreateOptionsMenu(menu)
@@ -61,8 +64,8 @@ class RecorderActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_timer -> {
-                startActivity(Intent(this, ScheduleActivity::class.java))
+            R.id.action_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
             R.id.action_folder -> {
@@ -115,7 +118,9 @@ class RecorderActivity : AppCompatActivity() {
         if (isRecording) {
             job?.cancel()
             job = lifecycleScope.launch {
+                val startTime = System.currentTimeMillis()
                 while (isActive) {
+                    recorderViewModel.duration.value = System.currentTimeMillis() - startTime
                     recorderViewModel.apply {
                         recording.levels.also {
                             measure.value = it.measure

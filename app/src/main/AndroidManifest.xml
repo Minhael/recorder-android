@@ -28,7 +28,9 @@
         </activity>
 
         <activity android:name=".component.RecorderActivity" />
-        <activity android:name=".component.ScheduleActivity" />
+        <activity
+            android:name=".component.SettingsActivity"
+            android:parentActivityName=".component.RecorderActivity"/>
 
         <service android:name=".component.RecorderService" android:foregroundServiceType="microphone" />
 

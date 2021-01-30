@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_recording_daily" translatable="false">daily recording</string>
+    <string name="key_schedule" translatable="false">schedule</string>
+    <string name="key_schedule_start_time" translatable="false">schedule start time</string>
+    <string name="key_schedule_end_time" translatable="false">schedule end time</string>
+    <string name="key_recording" translatable="false">recording</string>
+    <string name="key_recording_format" translatable="false">recording format</string>
+    <string name="key_recording_graphing_period" translatable="false">recording sampling period</string>
+    <string name="key_recording_file_pattern" translatable="false">recording file pattern</string>
+
+</resources>
