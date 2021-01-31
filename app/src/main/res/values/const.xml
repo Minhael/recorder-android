@@ -7,4 +7,11 @@
         <item>5000</item>
         <item>10000</item>
     </string-array>
+    <string-array name="const_measure_periods">
+        <item>200</item>
+        <item>500</item>
+        <item>800</item>
+        <item>1000</item>
+        <item>1500</item>
+    </string-array>
 </resources>

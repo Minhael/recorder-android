@@ -11,6 +11,7 @@ import me.minhael.recorder.Measurable
 import me.minhael.recorder.R
 import me.minhael.recorder.Recorder
 import org.koin.android.ext.android.inject
+import org.slf4j.LoggerFactory
 
 class RecorderService : Service() {
 
@@ -53,6 +54,7 @@ class RecorderService : Service() {
     }
 
     private fun startForeground() {
+        logger.debug("Start foreground service")
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val name = getString(R.string.app_name)
             val channel =
@@ -68,6 +70,7 @@ class RecorderService : Service() {
     }
 
     private fun stopForeground() {
+        logger.debug("Stop foreground service")
         NotificationManagerCompat.from(baseContext).cancel(ONGOING_NOTIFICATION_ID)
         stopForeground(true)
     }
@@ -107,5 +110,7 @@ class RecorderService : Service() {
         private val ACTION_NOTIFICATION = "${RecorderService::class.java}.action_notification"
         private const val REQ_CODE_CLICK = 1
         private const val ONGOING_NOTIFICATION_ID = 1
+
+        private val logger = LoggerFactory.getLogger(RecorderService::class.java)
     }
 }

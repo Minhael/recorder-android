@@ -1,5 +1,7 @@
 package me.minhael.recorder.service
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import me.minhael.design.job.Jobs
 import me.minhael.design.props.Props
 import me.minhael.recorder.PropTags
@@ -68,7 +70,7 @@ class Schedule(
             val recording: Recording by inject()
 
             scheduler.set(WORK_DEACTIVATE, Jobs.OneShot(System.currentTimeMillis() + duration)) { Deactivate() }
-            recording.start()
+            GlobalScope.launch { recording.start() }
 
             return true
         }
@@ -80,8 +82,8 @@ class Schedule(
             logger.info("End background recording")
 
             val recording: Recording by inject()
-            recording.stop()
-            recording.save()
+            GlobalScope.launch { recording.stop() }
+
             return true
         }
     }

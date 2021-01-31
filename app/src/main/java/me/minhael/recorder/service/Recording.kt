@@ -3,168 +3,137 @@ package me.minhael.recorder.service
 import android.content.Context
 import kotlinx.coroutines.*
 import me.minhael.design.android.BoundService
-import me.minhael.design.android.Services
-import me.minhael.design.fs.Uri
 import me.minhael.design.props.Props
-import me.minhael.design.sl.Serializer
 import me.minhael.recorder.Measurable
 import me.minhael.recorder.PropTags
 import me.minhael.recorder.Recorder
 import me.minhael.recorder.component.RecorderService
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+import org.slf4j.LoggerFactory
 import kotlin.math.max
 
 class Recording(
     private val context: Context,
-    private val resolver: Uri.Resolver,
     private val storage: Storage,
-    private val schedule: Schedule,
     private val props: Props,
-    private val serializer: Serializer
+    private val schedule: Schedule,
+    private val exporter: Exporter
 ) {
 
-    val levels = Levels()
+    var state = State()
+        private set
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    private var output: Session? = null
     private var job: Job? = null
 
-    fun start() {
-        Services.startForeground<Recorder>(context, RecorderService::class.java) { recorder ->
-            if (!recorder.isRecording())
-                startRecording(recorder)
-        }
+    suspend fun start(): State {
+        return changeState { startRecording(it) }
     }
 
-    fun stop() {
-        Services.startForeground<Recorder>(context, RecorderService::class.java) { recorder ->
-            stopRecording(recorder)
-        }
+    suspend fun stop(): State {
+        return changeState { stopRecording(it) }
     }
 
-    fun save() {
-        Services.startForeground<Recorder>(context, RecorderService::class.java) { recorder ->
-            stopRecording(recorder)
-            output?.apply { save(this) }
-            output = null
-        }
+    private suspend fun changeState(reducer: suspend (State) -> State): State {
+        return reducer(state).also { state = it }
     }
 
-    fun toggle(onToggle: (Boolean) -> Unit) {
-        Services.start<Recorder>(context, RecorderService::class.java) { recorder ->
-            val isRecording = recorder.isRecording()
-            if (isRecording) {
-                stopRecording(recorder)
-                output?.apply { save(this) }
-                output = null
-            } else
-                startRecording(recorder)
-            onToggle(!isRecording)
-        }
-    }
+    private suspend fun startRecording(state: State): State {
+        if (state.isRecording)
+            return state
 
-    private fun startRecording(recorder: Recorder) {
-        stopRecording(recorder)
+        return BoundService.startForeground<Recorder>(context, RecorderService::class.java).use { service ->
+            val recorder = service.api
 
-        val delayMs = props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT)
-        val session = Session(
-            recorder.record(storage.dirCache, FORMAT_TIME.print(DateTime())),
-            delayMs
-        )
+            logger.info("Start record")
 
-        job = scope.launch {
-            BoundService.startForeground<Measurable>(context, RecorderService::class.java).use { service ->
+            val periodMs = props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT)
+            val now = DateTime()
+            val uri = recorder.record(storage.dirCache, FORMAT_TIME.print(now))
+            val nextState = State(true, uri, now.millis, periodMs)
 
-                //  Delay 2 seconds to avoid sound produced by phone vibration
-                delay(2000)
-                service.api.soundLevel()
-                delay(delayMs)
+            job = scope.launch {
+                BoundService.startForeground<Measurable>(context, RecorderService::class.java).use { service ->
 
-                //  Initiate sound level
-                service.api.soundLevel().also {
-                    levels.apply {
-                        measure = it
-                        average = it
-                        max = it
+                    //  Initiate sound level
+                    service.api.soundLevel().also {
+                        nextState.levels.apply {
+                            average = it
+                            max = it
+                        }
                     }
-                }
 
-                //  Get sound level and accumulate
-                while (isActive) {
-                    val level = service.api.soundLevel()
-                    session.levels.add(level)
-                    levels.apply {
-                        measure = level
-                        average = (average + level) / 2
-                        max = max(max, level)
+                    //  Get sound level and accumulate
+                    launch(Dispatchers.IO) {
+                        while (isActive) {
+                            val level = service.api.soundLevel()
+                            nextState.measures.add(level)
+                            nextState.levels.apply {
+                                average = (average + level) / 2
+                                max = max(max, level)
+                            }
+                            delay(periodMs)
+                        }
                     }
-                    delay(delayMs)
                 }
             }
-        }
 
-        output?.uri?.also { storage.dirCache.delete(it) }
-        output = session
+            nextState
+        }
     }
 
-    private fun stopRecording(recorder: Recorder) {
-        if (recorder.isRecording()) {
+    private suspend fun stopRecording(state: State): State {
+        if (!state.isRecording)
+            return state
+
+        return BoundService.startForeground<Recorder>(context, RecorderService::class.java).use { service ->
+            val recorder = service.api
+
+            logger.info("Stop record")
+
             schedule.manualStop()
-            recorder.stop()
+            recorder.use { it.stop() }
+
+            scope.launch {
+                val cache = state.uri
+                val startTime = state.startTime
+                val interval = state.interval
+                val measures = state.measures
+
+                if (cache != null && startTime != null && interval != null) {
+                    val report = Exporter.Report(startTime, interval, measures)
+                    val uri = exporter.saveAsync(cache, report)
+                }
+
+                //  Remove cache
+                cache?.also { storage.dirCache.delete(it) }
+            }
+
             job?.cancel()
-            recorder.close()
+
+            state.copy(isRecording = false)
         }
     }
 
-    private fun save(session: Session) {
-        val pattern = props.get(PropTags.RECORDING_FILE_PATTERN, PropTags.RECORDING_FILE_PATTERN_DEFAULT)
-        val filename = DateTimeFormat.forPattern(pattern).print(session.startTime)
-
-        scope.launch {
-
-            //  Copy the audio file
-            val uri = async(Dispatchers.IO) {
-                resolver.readFrom(session.uri).use {
-                    storage.dirPublic.copy(it, "audio/amr", filename)
-                }
-            }
-
-            val report = Session(uri.await(), session.interval, session.startTime, session.levels, session.pulses)
-
-            //  Write report
-            launch(Dispatchers.IO) {
-                resolver.writeTo(storage.dirPublic.create("application/json", "$filename.json")).use {
-                    serializer.serialize(report, it)
-                }
-            }
-
-            //  Remove cache
-            storage.dirCache.delete(session.uri)
-        }
-    }
-
-    data class Pulse(
-        val offset: Long,
-        val duration: Long,
+    data class State(
+        val isRecording: Boolean = false,
+        val uri: String? = null,
+        val startTime: Long? = null,
+        val interval: Long? = null,
+        val measures: MutableList<Int> = mutableListOf(),
+        val levels: Levels = Levels()
     )
 
     data class Levels(
-        var measure: Int = 0,
         var average: Int = 0,
         var max: Int = 0
     )
 
-    private data class Session(
-        val uri: String,
-        val interval: Long,
-        val startTime: Long = System.currentTimeMillis(),
-        val levels: MutableList<Int> = mutableListOf(),
-        val pulses: MutableList<Pulse> = mutableListOf()
-    )
-
     companion object {
         private val FORMAT_TIME = DateTimeFormat.forPattern("yyyyMMddHHmmss")
+
+        private val logger = LoggerFactory.getLogger(Recording::class.java)
     }
 }

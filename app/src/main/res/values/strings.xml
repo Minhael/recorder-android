@@ -9,12 +9,14 @@
     <string name="msg_change_root_directory">Recording directory changed.</string>
 
     <string name="phrase_grant_permissions">Grant permissions</string>
-    <string name="phrase_daily_recording">Daily Recording</string>
+    <string name="phrase_daily_recording">Daily recording</string>
     <string name="phrase_start_time">Start time</string>
     <string name="phrase_end_time">End time</string>
     <string name="phrase_change_folder">Change folder</string>
     <string name="phrase_graph_update_period">Graph update period(ms)</string>
+    <string name="phrase_measure_period">Sound level measure period(ms)</string>
     <string name="phrase_filename_pattern">Filename pattern</string>
+    <string name="phrase_ui">User interface</string>
 
     <string name="word_settings">Settings</string>
     <string name="word_retry">Retry</string>

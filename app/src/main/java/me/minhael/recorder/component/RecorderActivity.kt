@@ -15,11 +15,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.minhael.design.android.AndroidFS
 import me.minhael.design.android.Documents
-import me.minhael.design.android.Services
 import me.minhael.design.props.Props
-import me.minhael.recorder.*
-import me.minhael.recorder.databinding.ActivityRecordBinding
+import me.minhael.recorder.Permissions
+import me.minhael.recorder.PropTags
+import me.minhael.recorder.R
 import me.minhael.recorder.service.Recording
+import me.minhael.recorder.databinding.ActivityRecordBinding
 import me.minhael.recorder.service.Storage
 import me.minhael.recorder.view.RecorderFragment
 import org.koin.android.ext.android.inject
@@ -44,17 +45,10 @@ class RecorderActivity : AppCompatActivity() {
 
         v.recordFab.setOnClickListener {
             v.recordFab.isEnabled = false
-
-            recording.toggle {
-                updateViews(it)
-                v.recordFab.isEnabled = true
-            }
+            toggleRecording(recording.state)
+            v.recordFab.isEnabled = true
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Services.start<Recorder>(this, RecorderService::class.java) { updateViews(it.isRecording()) }
+        updateView(recording.state)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -104,35 +98,51 @@ class RecorderActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateViews(isRecording: Boolean) {
+    private fun toggleRecording(state: Recording.State) {
+        lifecycleScope.launch {
+            if (state.isRecording) {
+                updateView(recording.stop())
+                stopPolling()
+            } else {
+                updateView(recording.start())
+                startPolling()
+            }
+        }
+    }
+
+    private fun updateView(state: Recording.State) {
+        recorderViewModel.startTime.value = state.startTime ?: System.currentTimeMillis()
         v.recordFab.setImageDrawable(
             ContextCompat.getDrawable(
                 applicationContext,
-                if (isRecording)
+                if (state.isRecording)
                     R.drawable.ic_baseline_stop_24
                 else
                     R.drawable.ic_baseline_mic_24
             )
         )
+    }
 
-        if (isRecording) {
-            job?.cancel()
-            job = lifecycleScope.launch {
-                val startTime = System.currentTimeMillis()
-                while (isActive) {
-                    recorderViewModel.duration.value = System.currentTimeMillis() - startTime
-                    recorderViewModel.apply {
-                        recording.levels.also {
-                            measure.value = it.measure
-                            average.value = it.average
-                            max.value = it.max
-                        }
-                    }
-                    delay(props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT))
+    private fun startPolling() {
+        val periodMs = props.get(PropTags.UI_GRAPH_UPDATE_MS, PropTags.UI_GRAPH_UPDATE_MS_DEFAULT)
+        stopPolling()
+
+        job = lifecycleScope.launch {
+            while (isActive) {
+                val state = recording.state
+                recorderViewModel.apply {
+                    duration.value = state.startTime?.let { System.currentTimeMillis() - it } ?: 0
+                    measure.value = state.measures.lastOrNull() ?: 0
+                    average.value = state.levels.average
+                    max.value = state.levels.max
                 }
+                delay(periodMs)
             }
-        } else {
-            job?.cancel()
         }
+    }
+
+    private fun stopPolling() {
+        job?.cancel()
+        job = null
     }
 }

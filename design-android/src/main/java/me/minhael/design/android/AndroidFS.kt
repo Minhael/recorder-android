@@ -25,15 +25,15 @@ class AndroidFS internal constructor(
     }
 
     override fun copy(inputStream: InputStream, mimeType: String, filename: String): String {
-        return create(mimeType, filename).also {
-            resolver.writeTo(it).use { output ->
-                try {
-                    IOUtils.copyLarge(inputStream, output)
-                } finally {
-                    output.flush()
-                }
+        val uri = root.findFile(filename)?.uri?.toString() ?: create(mimeType, filename)
+        resolver.writeTo(uri).use { output ->
+            try {
+                IOUtils.copyLarge(inputStream, output)
+            } finally {
+                output.flush()
             }
         }
+        return uri
     }
 
     override fun list(): List<String> {

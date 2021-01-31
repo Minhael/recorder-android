@@ -9,7 +9,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import me.minhael.recorder.databinding.FragmentRecorderBinding
-import java.lang.RuntimeException
+import org.joda.time.Period
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.PeriodFormatterBuilder
 
 class RecorderFragment: Fragment() {
 
@@ -23,15 +25,13 @@ class RecorderFragment: Fragment() {
         viewModel.measure.observe(this) { v.recorderTvValue.text = it.toString() }
         viewModel.average.observe(this) { v.recorderTvAverage.text = it.toString() }
         viewModel.max.observe(this) { v.recorderTvMax.text = it.toString() }
+        viewModel.startTime.observe(this) { v.recorderTvStartTime.text = FORMAT_START_TIME.print(it) }
+        viewModel.duration.observe(this) { v.recorderTvDuration.text = FORMAT_DURATION.print(Period(it)) }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _v = FragmentRecorderBinding.inflate(inflater, container, false)
         return v.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onDestroyView() {
@@ -40,9 +40,24 @@ class RecorderFragment: Fragment() {
     }
 
     data class RecorderViewModel(
+        val startTime: MutableLiveData<Long> = MutableLiveData(0),
         val duration: MutableLiveData<Long> = MutableLiveData(0),
         val measure: MutableLiveData<Int> = MutableLiveData(0),
         val average: MutableLiveData<Int> = MutableLiveData(0),
-        val max: MutableLiveData<Int> = MutableLiveData(0)
+        val max: MutableLiveData<Int> = MutableLiveData(0),
     ) : ViewModel()
+
+    companion object {
+        private val FORMAT_START_TIME = DateTimeFormat.forPattern("MM/dd HH:mm")
+        private val FORMAT_DURATION = PeriodFormatterBuilder()
+            .printZeroAlways()
+            .minimumPrintedDigits(2)
+            .appendHours()
+            .appendSeparator(":")
+            .minimumPrintedDigits(2)
+            .appendMinutes()
+            .appendSeparator(":")
+            .appendSeconds()
+            .toFormatter()
+    }
 }

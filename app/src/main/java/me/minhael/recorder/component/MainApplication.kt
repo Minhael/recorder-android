@@ -13,6 +13,7 @@ import me.minhael.design.sl.FstSerializer
 import me.minhael.design.sl.JacksonSerializer
 import me.minhael.design.sl.Serializer
 import me.minhael.recorder.*
+import me.minhael.recorder.service.Exporter
 import me.minhael.recorder.service.Recording
 import me.minhael.recorder.service.Schedule
 import me.minhael.recorder.service.Storage
@@ -53,9 +54,11 @@ class MainApplication : Application() {
                         factory<Recorder> { AmrRecorder() }
                         factory<Jobs> { AndroidScheduler(get(), get()) }
 
+                        factory { Schedule(get(), get()) }
+                        factory { Exporter(get(), get(), get(), get(named("json"))) }
+
                         single { Storage.from(androidContext()) }
-                        single { Schedule(get(), get()) }
-                        single { Recording(androidContext(), get(), get(), get(), get(), get(named("json"))) }
+                        single { Recording(androidContext(), get(), get(), get(), get()) }
                     }
                 )
             )

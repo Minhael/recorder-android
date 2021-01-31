@@ -68,6 +68,9 @@ dependencies {
 
     implementation 'com.github.tony19:logback-android:2.0.0'
 
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
+
     implementation "me.minhael:design-fst:$design_version"
     implementation "me.minhael:design-icu:$design_version"
     implementation "me.minhael:design-okhttp:$design_version"

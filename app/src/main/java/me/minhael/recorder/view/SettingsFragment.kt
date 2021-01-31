@@ -5,7 +5,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.preference.*
-import com.google.android.material.snackbar.Snackbar
 import me.minhael.design.android.TimePickerFragment
 import me.minhael.recorder.R
 import org.joda.time.format.DateTimeFormat
@@ -23,14 +22,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
             prefFilename.setDefaultValue(it)
         }
 
-        val prefGraphing = findPreference<ListPreference>(getString(R.string.key_recording_graphing_period)) ?: throw IllegalStateException()
-        viewModel.graphing.observe(this) {
-            prefGraphing.summary = it.toString()
-            prefGraphing.setDefaultValue(it.toString())
+        val prefMeasurePeriod = findPreference<ListPreference>(getString(R.string.key_recording_measure_period)) ?: throw IllegalStateException()
+        viewModel.measurePeriod.observe(this) {
+            prefMeasurePeriod.summary = it.toString()
+            prefMeasurePeriod.setDefaultValue(it.toString())
         }
-        prefGraphing.setOnPreferenceChangeListener { _, newValue ->
+        prefMeasurePeriod.setOnPreferenceChangeListener { _, newValue ->
             try {
-                viewModel.graphing.value = (newValue as String).toLong()
+                viewModel.measurePeriod.value = (newValue as String).toLong()
                 true
             } catch (e: NumberFormatException) {
                 false
@@ -58,6 +57,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
         }
+
+        val prefGraphing = findPreference<ListPreference>(getString(R.string.key_ui_graphing_period)) ?: throw IllegalStateException()
+        viewModel.graphingPeriod.observe(this) {
+            prefGraphing.summary = it.toString()
+            prefMeasurePeriod.setDefaultValue(it.toString())
+        }
+        prefGraphing.setOnPreferenceChangeListener { _, newValue ->
+            try {
+                viewModel.graphingPeriod.value = (newValue as String).toLong()
+                true
+            } catch (e: NumberFormatException) {
+                false
+            }
+        }
     }
 
     private fun selectStartTime(original: Long, endTime: Long) {
@@ -76,9 +89,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     data class SettingsViewModel(
         val filenamePattern: MutableLiveData<String> = MutableLiveData(""),
-        val graphing: MutableLiveData<Long> = MutableLiveData(0),
+        val measurePeriod: MutableLiveData<Long> = MutableLiveData(0),
         val isActivate: MutableLiveData<Boolean> = MutableLiveData(false),
-        val interval: MutableLiveData<Pair<Long, Long>> = MutableLiveData(0L to 0L)
+        val interval: MutableLiveData<Pair<Long, Long>> = MutableLiveData(0L to 0L),
+        val graphingPeriod: MutableLiveData<Long> = MutableLiveData(0)
     ) : ViewModel()
 
     companion object {

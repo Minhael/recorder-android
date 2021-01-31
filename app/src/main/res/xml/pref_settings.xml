@@ -2,22 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory
-        app:key="@string/key_recording"
-        app:title="@string/word_recording">
-
-        <EditTextPreference
-            app:key="@string/key_recording_file_pattern"
-            app:title="@string/phrase_filename_pattern" />
-
-        <ListPreference
-            app:key="@string/key_recording_graphing_period"
-            app:title="@string/phrase_graph_update_period"
-            app:entries="@array/const_graphing_periods"
-            app:entryValues="@array/const_graphing_periods"/>
-
-    </PreferenceCategory>
-
     <SwitchPreferenceCompat
         app:key="@string/key_recording_daily"
         app:title="@string/phrase_daily_recording"/>
@@ -34,6 +18,34 @@
         <Preference
             app:key="@string/key_schedule_end_time"
             app:title="@string/phrase_end_time" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="@string/key_recording"
+        app:title="@string/word_recording">
+
+        <EditTextPreference
+            app:key="@string/key_recording_file_pattern"
+            app:title="@string/phrase_filename_pattern" />
+
+        <ListPreference
+            app:key="@string/key_recording_measure_period"
+            app:title="@string/phrase_measure_period"
+            app:entries="@array/const_measure_periods"
+            app:entryValues="@array/const_measure_periods"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="@string/key_ui"
+        app:title="@string/phrase_ui">
+
+        <ListPreference
+            app:key="@string/key_ui_graphing_period"
+            app:title="@string/phrase_graph_update_period"
+            app:entries="@array/const_graphing_periods"
+            app:entryValues="@array/const_graphing_periods"/>
 
     </PreferenceCategory>
 

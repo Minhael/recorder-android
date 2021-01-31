@@ -6,7 +6,9 @@
     <string name="key_schedule_end_time" translatable="false">schedule end time</string>
     <string name="key_recording" translatable="false">recording</string>
     <string name="key_recording_format" translatable="false">recording format</string>
-    <string name="key_recording_graphing_period" translatable="false">recording sampling period</string>
+    <string name="key_recording_measure_period" translatable="false">recording measure period</string>
     <string name="key_recording_file_pattern" translatable="false">recording file pattern</string>
+    <string name="key_ui" translatable="false">ui</string>
+    <string name="key_ui_graphing_period" translatable="false">ui graphing period</string>
 
 </resources>
