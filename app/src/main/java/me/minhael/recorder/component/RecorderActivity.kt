@@ -48,7 +48,14 @@ class RecorderActivity : AppCompatActivity() {
             toggleRecording(recording.state)
             v.recordFab.isEnabled = true
         }
-        updateView(recording.state)
+
+        val lastState = recording.state
+        updateView(lastState)
+        if (lastState.isRecording) {
+            startPolling()
+        } else {
+            recorderViewModel.state.value = lastState.run { mapRecordingState2ViewState(this) }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -111,7 +118,7 @@ class RecorderActivity : AppCompatActivity() {
     }
 
     private fun updateView(state: Recording.State) {
-        recorderViewModel.startTime.value = state.startTime ?: System.currentTimeMillis()
+        recorderViewModel.isRecording.value = state.isRecording
         v.recordFab.setImageDrawable(
             ContextCompat.getDrawable(
                 applicationContext,
@@ -129,13 +136,7 @@ class RecorderActivity : AppCompatActivity() {
 
         job = lifecycleScope.launch {
             while (isActive) {
-                val state = recording.state
-                recorderViewModel.apply {
-                    duration.value = state.startTime?.let { System.currentTimeMillis() - it } ?: 0
-                    measure.value = state.measures.lastOrNull() ?: 0
-                    average.value = state.levels.average
-                    max.value = state.levels.max
-                }
+                recorderViewModel.state.value = recording.state.run { mapRecordingState2ViewState(this) }
                 delay(periodMs)
             }
         }
@@ -144,5 +145,15 @@ class RecorderActivity : AppCompatActivity() {
     private fun stopPolling() {
         job?.cancel()
         job = null
+    }
+
+    private fun mapRecordingState2ViewState(state: Recording.State): RecorderFragment.ViewState {
+        return RecorderFragment.ViewState(
+            state.startTime ?: System.currentTimeMillis(),
+            state.startTime?.let { System.currentTimeMillis() - it } ?: 0,
+            state.measures.lastOrNull() ?: 0,
+            state.levels.average,
+            state.levels.max
+        )
     }
 }

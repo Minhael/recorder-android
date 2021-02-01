@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="const_graphing_periods">
+        <item>50</item>
+        <item>100</item>
+        <item>250</item>
         <item>500</item>
         <item>1000</item>
         <item>2000</item>
@@ -8,10 +11,10 @@
         <item>10000</item>
     </string-array>
     <string-array name="const_measure_periods">
-        <item>200</item>
+        <item>50</item>
+        <item>100</item>
+        <item>250</item>
         <item>500</item>
-        <item>800</item>
         <item>1000</item>
-        <item>1500</item>
     </string-array>
 </resources>
