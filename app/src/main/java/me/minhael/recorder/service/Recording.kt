@@ -93,7 +93,7 @@ class Recording(
 
             logger.info("Stop record")
 
-            schedule.manualStop()
+            schedule.manualStopped()
             recorder.use { it.stop() }
 
             scope.launch {

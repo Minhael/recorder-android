@@ -15,9 +15,6 @@ object PropTags {
     const val SCHEDULE_TIME_END = "schedule.time.end"
     const val SCHEDULE_TIME_END_DEFAULT = 1609545600000L
 
-    const val SCHEDULE_PERIOD_MS = "schedule.period.ms"
-    const val SCHEDULE_PERIOD_MS_DEFAULT = 24 * 60 * 60 * 1000L
-
     const val MEASURE_PERIOD_UPDATE_MS = "measure.period.update.ms"
     const val MEASURE_PERIOD_UPDATE_MS_DEFAULT = 100L
 

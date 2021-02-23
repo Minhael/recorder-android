@@ -1,145 +1,57 @@
 package me.minhael.recorder.service
 
-import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.eq
-import me.minhael.design.job.Jobs
+import me.minhael.design.job.JobManager
 import me.minhael.design.props.Props
 import me.minhael.recorder.PropTags
-import org.joda.time.DateTimeUtils
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.koin.core.component.KoinApiExtension
 import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.mockito.Mock
-import org.mockito.Mockito.*
-import org.mockito.MockitoAnnotations
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.any
+import org.mockito.junit.jupiter.MockitoExtension
 
+@ExtendWith(MockitoExtension::class)
 internal class ScheduleTest : AutoCloseKoinTest() {
 
     @Mock
     lateinit var props: Props
 
     @Mock
-    lateinit var jobs: Jobs
+    lateinit var jm: JobManager
 
     @Mock
     lateinit var recording: Recording
 
     private val module = module {
         factory { props }
-        factory { jobs }
+        factory { jm }
         factory { recording }
     }
 
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        `when`(props.get(eq(PropTags.SCHEDULE_PERIOD_MS), any())).thenReturn(PropTags.SCHEDULE_PERIOD_MS_DEFAULT)
-
         startKoin { modules(module) }
     }
 
     @After
     fun tearDown() {
+        stopKoin()
     }
 
-    @KoinApiExtension
     @Test
     fun activate() {
-        DateTimeUtils.setCurrentMillisFixed(sameDay)
-
-        `when`(props.get(eq(PropTags.SCHEDULE_TIME_START), any())).thenReturn(PropTags.SCHEDULE_TIME_START_DEFAULT)
-        `when`(props.get(eq(PropTags.SCHEDULE_TIME_END), any())).thenReturn(PropTags.SCHEDULE_TIME_END_DEFAULT)
-
-        val schedule = Schedule(props, jobs)
-        val name = argumentCaptor<String>()
-        val trigger = argumentCaptor<Jobs.Trigger>()
-        val job = argumentCaptor<() -> Jobs.Job>()
-
-        schedule.activate()
-        verify(jobs).set(name.capture(), trigger.capture(), job.capture())
-        reset(jobs)
-
-        job.firstValue().execute()
-        verify(jobs).set(name.capture(), trigger.capture(), job.capture())
-        verify(recording).start()
-        verify(recording, never()).stop()
-
-        job.secondValue().execute()
-        verify(recording).stop()
-
-        schedule.deactivate()
-        verify(jobs).remove(eq(name.firstValue))
-        verify(jobs, never()).remove(eq(name.secondValue))
-
-        schedule.manualStop()
-        verify(jobs).remove(eq(name.secondValue))
-
-        val aTrigger = trigger.firstValue
-        assertTrue(aTrigger is Jobs.Periodic)
-        (aTrigger as Jobs.Periodic).apply {
-            assertEquals(sameStart, timestamp)
-            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, periodMs)
-            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, flexMs)
-        }
-
-        val bTrigger = trigger.secondValue
-        assertTrue(bTrigger is Jobs.OneShot)
-        (bTrigger as Jobs.OneShot).apply {
-            assertEquals(sameEnd, timestamp)
-        }
     }
 
-    @KoinApiExtension
     @Test
     fun activateNextDay() {
-        DateTimeUtils.setCurrentMillisFixed(nextDay)
-
-        `when`(props.get(eq(PropTags.SCHEDULE_TIME_START), any())).thenReturn(PropTags.SCHEDULE_TIME_START_DEFAULT)
-        `when`(props.get(eq(PropTags.SCHEDULE_TIME_END), any())).thenReturn(PropTags.SCHEDULE_TIME_END_DEFAULT)
-
-        val schedule = Schedule(props, jobs)
-        val name = argumentCaptor<String>()
-        val trigger = argumentCaptor<Jobs.Trigger>()
-        val job = argumentCaptor<() -> Jobs.Job>()
-
-        schedule.activate()
-        verify(jobs).set(name.capture(), trigger.capture(), job.capture())
-        reset(jobs)
-
-        job.firstValue().execute()
-        verify(jobs).set(name.capture(), trigger.capture(), job.capture())
-        verify(recording).start()
-        verify(recording, never()).stop()
-
-        job.secondValue().execute()
-        verify(recording).stop()
-
-        schedule.deactivate()
-        verify(jobs).remove(eq(name.firstValue))
-        verify(jobs, never()).remove(eq(name.secondValue))
-
-        schedule.manualStop()
-        verify(jobs).remove(eq(name.secondValue))
-
-        val aTrigger = trigger.firstValue
-        assertTrue(aTrigger is Jobs.Periodic)
-        (aTrigger as Jobs.Periodic).apply {
-            assertEquals(nextStart, timestamp)
-            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, periodMs)
-            assertEquals(PropTags.SCHEDULE_PERIOD_MS_DEFAULT, flexMs)
-        }
-
-        val bTrigger = trigger.secondValue
-        assertTrue(bTrigger is Jobs.OneShot)
-        (bTrigger as Jobs.OneShot).apply {
-            assertEquals(nextEnd, timestamp)
-        }
     }
 
     companion object {

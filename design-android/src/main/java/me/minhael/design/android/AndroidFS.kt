@@ -7,26 +7,32 @@ import androidx.annotation.RequiresApi
 import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
 import me.minhael.design.fs.FileSystem
-import me.minhael.design.fs.Uri
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 
+/**
+ * [FileSystem] implements by [DocumentFile].
+ *
+ * Please note that [FileSystem.Meta.size] indicates the length of the data in the mime type,
+ * limiting by [DocumentFile.length] which should actually return the size in bytes instead
+ */
 class AndroidFS internal constructor(
     private val context: Context,
-    private val resolver: Uri.Resolver,
     private val root: DocumentFile
 ) : FileSystem {
 
     override fun create(mimeType: String, filename: String): String {
-        return root.createFile(mimeType, filename)?.uri?.toString()
+        return root
+            .createFile(mimeType, filename.substringBeforeLast('.'))
+            ?.uri?.toString()
             ?: throw IOException("Failed to create file")
     }
 
     override fun copy(inputStream: InputStream, mimeType: String, filename: String): String {
         val uri = root.findFile(filename)?.uri?.toString() ?: create(mimeType, filename)
-        resolver.writeTo(uri).use { output ->
+        accessor.writeTo(uri).use { output ->
             try {
                 IOUtils.copyLarge(inputStream, output)
             } finally {
@@ -40,6 +46,10 @@ class AndroidFS internal constructor(
         return root.listFiles().filter { it.isFile }.map { it.uri.toString() }
     }
 
+    override fun find(filename: String): FileSystem.Meta? {
+        return root.findFile(filename)?.let { fetchMeta(it) }
+    }
+
     override fun peek(uri: String): FileSystem.Meta? {
         return assertFile(uri)?.takeIf { it.isFile }?.let { fetchMeta(it) }
     }
@@ -51,7 +61,6 @@ class AndroidFS internal constructor(
     override fun createDir(dirname: String): FileSystem {
         return AndroidFS(
             context,
-            resolver,
             root.createDirectory(dirname) ?: throw IOException("Failed to create directory")
         )
     }
@@ -61,7 +70,7 @@ class AndroidFS internal constructor(
     }
 
     override fun browse(uri: String): FileSystem? {
-        return assertFile(uri)?.takeIf { it.isDirectory }?.let { AndroidFS(context, resolver, it) }
+        return assertFile(uri)?.takeIf { it.isDirectory }?.let { AndroidFS(context, it) }
     }
 
     override fun deleteDir(uri: String): Boolean {
@@ -85,50 +94,46 @@ class AndroidFS internal constructor(
             ?: FileSystem.Space(0, Long.MAX_VALUE, Long.MAX_VALUE)
     }
 
+    override fun destroy(): Boolean {
+        return root.delete()
+    }
+
     override fun toFile(uri: String): File {
         return android.net.Uri.parse(uri).toFile()
     }
+
+    private val accessor = AndroidUriAccessor(context.contentResolver)
+    override fun accessor() = accessor
 
     private fun assertFile(uri: String): DocumentFile? {
         val file = DocumentFile
             .fromSingleUri(context, android.net.Uri.parse(uri))
             ?: throw IllegalArgumentException("> KITKAT")
-        return file.name?.let { root.findFile(it) }?.takeIf { it.uri == file.uri }
+        return file.uri.lastPathSegment?.let { root.findFile(it) }?.takeIf { it.uri == file.uri }
     }
 
     companion object {
 
-        @JvmStatic fun base(context: Context, file: File): AndroidFS {
+        @JvmStatic
+        fun base(context: Context, file: File): AndroidFS {
             if (!file.exists() && !file.mkdirs())
                 throw IOException("Failed to use directory as root")
-            return AndroidFS(
-                context,
-                Uri.Resolver(AndroidUriAccessor(context.contentResolver)),
-                DocumentFile.fromFile(file)
-            )
+            return AndroidFS(context, DocumentFile.fromFile(file))
         }
 
         @JvmStatic
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-        fun base(
-            context: Context,
-            treeUri: String,
-            resolver: Uri.Resolver = Uri.Resolver(AndroidUriAccessor(context.contentResolver))
-        ) = base(context, android.net.Uri.parse(treeUri), resolver)
+        fun base(context: Context, treeUri: String) = base(context, android.net.Uri.parse(treeUri))
 
         @JvmStatic
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-        fun base(
-            context: Context,
-            treeUri: android.net.Uri,
-            resolver: Uri.Resolver = Uri.Resolver(AndroidUriAccessor(context.contentResolver))
-        ): AndroidFS {
+        fun base(context: Context, treeUri: android.net.Uri): AndroidFS {
             val root = fromUri(context, treeUri)
 
             if (!root.exists() || !root.isDirectory)
                 throw IOException("$treeUri is not a directory")
 
-            return AndroidFS(context, resolver, root)
+            return AndroidFS(context, root)
         }
 
         private fun fromUri(context: Context, treeUri: android.net.Uri): DocumentFile {
@@ -136,7 +141,12 @@ class AndroidFS internal constructor(
         }
 
         private fun fetchMeta(doc: DocumentFile): FileSystem.Meta {
-            return FileSystem.Meta(doc.uri.toString(), doc.name ?: "", doc.type, doc.length())
+            return FileSystem.Meta(
+                doc.uri.toString(),
+                doc.name ?: doc.uri.lastPathSegment ?: "",
+                doc.type ?: "application/octet-stream",
+                doc.length()
+            )
         }
     }
 }

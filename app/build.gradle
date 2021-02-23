@@ -79,6 +79,5 @@ dependencies {
     implementation "me.minhael:design-icu:$design_version"
     implementation "me.minhael:design-okhttp:$design_version"
     implementation "me.minhael:design-jackson:$design_version"
-    implementation project(':design-android')
     implementation project(':design-koin')
 }

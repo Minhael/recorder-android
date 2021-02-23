@@ -2,12 +2,17 @@ package me.minhael.recorder.component
 
 import android.app.Application
 import androidx.work.WorkManager
+import me.minhael.design.Sr
+import me.minhael.design.android.AndroidFS
 import me.minhael.design.android.AndroidProps
 import me.minhael.design.android.AndroidUriAccessor
+import me.minhael.design.fs.FileSystem
 import me.minhael.design.fs.OkUriAccessor
 import me.minhael.design.fs.Uri
-import me.minhael.design.job.Jobs
+import me.minhael.design.job.JobManager
 import me.minhael.design.koin.AndroidScheduler
+import me.minhael.design.koin.FsQueue
+import me.minhael.design.koin.JobQueue
 import me.minhael.design.props.Props
 import me.minhael.design.sl.FstSerializer
 import me.minhael.design.sl.JacksonSerializer
@@ -20,15 +25,14 @@ import me.minhael.recorder.service.Storage
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.component.KoinApiExtension
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
 class MainApplication : Application() {
 
-    @KoinApiExtension
     override fun onCreate() {
         super.onCreate()
 
@@ -42,7 +46,7 @@ class MainApplication : Application() {
                         factory { WorkManager.getInstance(androidContext()) }
 
                         single<Serializer>(named("json")) { JacksonSerializer { JacksonSerializer.default() } }
-                        single<Serializer> { FstSerializer() }
+                        single { FstSerializer() } bind Serializer::class
 
                         factory {
                             Uri.Resolver(
@@ -50,15 +54,19 @@ class MainApplication : Application() {
                                 OkUriAccessor { OkHttpClient.Builder().build() }
                             )
                         }
-                        factory<Props> { AndroidProps(androidContext().getSharedPreferences("default", MODE_PRIVATE), get()) }
-                        factory<Recorder> { AmrRecorder() }
-                        factory<Jobs> { AndroidScheduler(get(), get()) }
+                        factory { AndroidFS.base(androidContext(), androidContext().filesDir) } bind FileSystem::class
+                        factory { AndroidProps(androidContext().getSharedPreferences("default", MODE_PRIVATE), get()) } bind Props::class
+                        factory { AmrRecorder() } bind Recorder::class
+                        factory { FsQueue(get(), get()) } bind JobQueue::class
+                        factory { AndroidScheduler(get(), get(), get()) } bind JobManager::class
 
                         factory { Schedule(get(), get()) }
                         factory { Exporter(get(), get(), get(), get(named("json"))) }
 
                         single { Storage.from(androidContext()) }
                         single { Recording(androidContext(), get(), get(), get(), get()) }
+
+                        single { Sr() }
                     }
                 )
             )
