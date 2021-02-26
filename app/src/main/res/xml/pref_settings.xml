@@ -37,16 +37,4 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory
-        app:key="@string/key_ui"
-        app:title="@string/phrase_ui">
-
-        <ListPreference
-            app:key="@string/key_ui_graphing_period"
-            app:title="@string/phrase_graph_update_period"
-            app:entries="@array/const_graphing_periods"
-            app:entryValues="@array/const_graphing_periods"/>
-
-    </PreferenceCategory>
-
 </PreferenceScreen>

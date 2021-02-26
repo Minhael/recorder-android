@@ -35,7 +35,6 @@ class SettingsActivity: AppCompatActivity() {
         settingsViewModel.measurePeriod.value = props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT)
         settingsViewModel.isActivate.value = props.get(PropTags.SCHEDULE_DAILY, PropTags.SCHEDULE_DAILY_DEFAULT)
         settingsViewModel.interval.value = startTime to endTime
-        settingsViewModel.graphingPeriod.value = props.get(PropTags.UI_GRAPH_UPDATE_MS, PropTags.UI_GRAPH_UPDATE_MS_DEFAULT)
 
         settingsViewModel.filenamePattern.observe(this) {
             if (props.get(PropTags.RECORDING_FILE_PATTERN, PropTags.RECORDING_FILE_PATTERN_DEFAULT) != it) {
@@ -73,12 +72,6 @@ class SettingsActivity: AppCompatActivity() {
                 if (props.get(PropTags.SCHEDULE_DAILY, PropTags.SCHEDULE_DAILY_DEFAULT)) {
                     schedule.activate()
                 }
-            }
-        }
-
-        settingsViewModel.graphingPeriod.observe(this) {
-            if (props.get(PropTags.UI_GRAPH_UPDATE_MS, PropTags.UI_GRAPH_UPDATE_MS_DEFAULT) != it) {
-                props.put(PropTags.UI_GRAPH_UPDATE_MS, it)
             }
         }
     }

@@ -1,7 +1,5 @@
 package me.minhael.recorder.service
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import me.minhael.design.job.Job
 import me.minhael.design.job.JobManager
 import me.minhael.design.job.JobTrigger
@@ -26,7 +24,6 @@ class Schedule(
         logger.debug("Computed schedule\nNextStart = {}\nNextEnd = {}\nDuration = {} Period = {}", nextStart, nextEnd)
 
         val cron = "0 ${nextStart.minuteOfHour} ${nextStart.hourOfDay} * * ?"
-
         scheduler.set(WORK_ACTIVATE, JobTrigger.Cron(cron)) { Activate(nextEnd.millis) }
     }
 
@@ -44,12 +41,12 @@ class Schedule(
             logger.info("Start recording in background")
 
             val scheduler: JobManager by inject()
-            val recording: Recording by inject()
+            val session: Session by inject()
             val now = System.currentTimeMillis()
 
             if (endTime > now) {
                 scheduler.set(WORK_DEACTIVATE, JobTrigger.OneShot(endTime - now)) { Deactivate() }
-                GlobalScope.launch { recording.start() }
+                session.start()
             }
 
             return true
@@ -61,8 +58,8 @@ class Schedule(
         override fun execute(): Boolean? {
             logger.info("End background recording")
 
-            val recording: Recording by inject()
-            GlobalScope.launch { recording.stop() }
+            val session: Session by inject()
+            session.stop()
 
             return true
         }

@@ -17,7 +17,4 @@ object PropTags {
 
     const val MEASURE_PERIOD_UPDATE_MS = "measure.period.update.ms"
     const val MEASURE_PERIOD_UPDATE_MS_DEFAULT = 100L
-
-    const val UI_GRAPH_UPDATE_MS = "ui.graph.update.ms"
-    const val UI_GRAPH_UPDATE_MS_DEFAULT = 100L
 }

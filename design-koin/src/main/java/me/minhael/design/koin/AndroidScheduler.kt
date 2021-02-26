@@ -167,7 +167,6 @@ class AndroidScheduler(
             val jobs: JobManager by inject()
 
             val rt = job.build().execute()
-
             when (rt) {
                 true, null -> jobs.set(
                     name, JobTrigger.OneShot(getDelaysFromNow(cron)), ConsecutiveWrapper(cron, name, job)

@@ -57,20 +57,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
         }
-
-        val prefGraphing = findPreference<ListPreference>(getString(R.string.key_ui_graphing_period)) ?: throw IllegalStateException()
-        viewModel.graphingPeriod.observe(this) {
-            prefGraphing.summary = it.toString()
-            prefMeasurePeriod.setDefaultValue(it.toString())
-        }
-        prefGraphing.setOnPreferenceChangeListener { _, newValue ->
-            try {
-                viewModel.graphingPeriod.value = (newValue as String).toLong()
-                true
-            } catch (e: NumberFormatException) {
-                false
-            }
-        }
     }
 
     private fun selectStartTime(original: Long, endTime: Long) {

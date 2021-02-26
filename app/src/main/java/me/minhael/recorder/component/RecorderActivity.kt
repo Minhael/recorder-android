@@ -9,9 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.minhael.design.android.AndroidFS
 import me.minhael.design.android.Documents
@@ -19,8 +16,9 @@ import me.minhael.design.props.Props
 import me.minhael.recorder.Permissions
 import me.minhael.recorder.PropTags
 import me.minhael.recorder.R
-import me.minhael.recorder.service.Recording
 import me.minhael.recorder.databinding.ActivityRecordBinding
+import me.minhael.recorder.service.Graphing
+import me.minhael.recorder.service.Session
 import me.minhael.recorder.service.Storage
 import me.minhael.recorder.view.RecorderFragment
 import org.koin.android.ext.android.inject
@@ -30,12 +28,11 @@ class RecorderActivity : AppCompatActivity() {
 
     private val props: Props by inject()
     private val storage: Storage by inject()
-    private val recording: Recording by inject()
+    private val session: Session by inject()
+    private val graphing: Graphing by inject()
 
     private val recorderViewModel: RecorderFragment.RecorderViewModel by viewModel()
     private lateinit var v: ActivityRecordBinding
-
-    private var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,16 +42,16 @@ class RecorderActivity : AppCompatActivity() {
 
         v.recordFab.setOnClickListener {
             v.recordFab.isEnabled = false
-            toggleRecording(recording.state)
+            toggleRecording()
             v.recordFab.isEnabled = true
         }
 
-        val lastState = recording.state
-        updateView(lastState)
-        if (lastState.isRecording) {
+        val isRecording = session.isRecording()
+        updateView(isRecording)
+        if (isRecording) {
             startPolling()
         } else {
-            recorderViewModel.state.value = lastState.run { mapRecordingState2ViewState(this) }
+            recorderViewModel.state.value = mapRecordingState2ViewState(graphing.getLevels())
         }
     }
 
@@ -105,24 +102,26 @@ class RecorderActivity : AppCompatActivity() {
         }
     }
 
-    private fun toggleRecording(state: Recording.State) {
+    private fun toggleRecording() {
         lifecycleScope.launch {
-            if (state.isRecording) {
-                updateView(recording.stop())
+            if (session.isRecording()) {
+                session.stop()
+                updateView(false)
                 stopPolling()
             } else {
-                updateView(recording.start())
+                session.start()
+                updateView(true)
                 startPolling()
             }
         }
     }
 
-    private fun updateView(state: Recording.State) {
-        recorderViewModel.isRecording.value = state.isRecording
+    private fun updateView(isRecording: Boolean) {
+        recorderViewModel.isRecording.value = isRecording
         v.recordFab.setImageDrawable(
             ContextCompat.getDrawable(
                 applicationContext,
-                if (state.isRecording)
+                if (isRecording)
                     R.drawable.ic_baseline_stop_24
                 else
                     R.drawable.ic_baseline_mic_24
@@ -131,29 +130,19 @@ class RecorderActivity : AppCompatActivity() {
     }
 
     private fun startPolling() {
-        val periodMs = props.get(PropTags.UI_GRAPH_UPDATE_MS, PropTags.UI_GRAPH_UPDATE_MS_DEFAULT)
-        stopPolling()
-
-        job = lifecycleScope.launch {
-            while (isActive) {
-                recorderViewModel.state.value = recording.state.run { mapRecordingState2ViewState(this) }
-                delay(periodMs)
-            }
-        }
+        graphing.start { recorderViewModel.state.value = mapRecordingState2ViewState(it) }
     }
 
     private fun stopPolling() {
-        job?.cancel()
-        job = null
+        graphing.stop()
     }
 
-    private fun mapRecordingState2ViewState(state: Recording.State): RecorderFragment.ViewState {
+    private fun mapRecordingState2ViewState(levels: Graphing.Levels): RecorderFragment.ViewState {
         return RecorderFragment.ViewState(
-            state.startTime ?: System.currentTimeMillis(),
-            state.startTime?.let { System.currentTimeMillis() - it } ?: 0,
-            state.measures.lastOrNull() ?: 0,
-            state.levels.average,
-            state.levels.max
+            session.startTime() ?: System.currentTimeMillis(),
+            levels.measure,
+            levels.average,
+            levels.max
         )
     }
 }

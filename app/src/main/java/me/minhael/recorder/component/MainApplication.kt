@@ -2,7 +2,6 @@ package me.minhael.recorder.component
 
 import android.app.Application
 import androidx.work.WorkManager
-import me.minhael.design.Sr
 import me.minhael.design.android.AndroidFS
 import me.minhael.design.android.AndroidProps
 import me.minhael.design.android.AndroidUriAccessor
@@ -18,10 +17,7 @@ import me.minhael.design.sl.FstSerializer
 import me.minhael.design.sl.JacksonSerializer
 import me.minhael.design.sl.Serializer
 import me.minhael.recorder.*
-import me.minhael.recorder.service.Exporter
-import me.minhael.recorder.service.Recording
-import me.minhael.recorder.service.Schedule
-import me.minhael.recorder.service.Storage
+import me.minhael.recorder.service.*
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -43,8 +39,6 @@ class MainApplication : Application() {
             modules(
                 listOf(
                     module {
-                        factory { WorkManager.getInstance(androidContext()) }
-
                         single<Serializer>(named("json")) { JacksonSerializer { JacksonSerializer.default() } }
                         single { FstSerializer() } bind Serializer::class
 
@@ -57,16 +51,19 @@ class MainApplication : Application() {
                         factory { AndroidFS.base(androidContext(), androidContext().filesDir) } bind FileSystem::class
                         factory { AndroidProps(androidContext().getSharedPreferences("default", MODE_PRIVATE), get()) } bind Props::class
                         factory { AmrRecorder() } bind Recorder::class
+
                         factory { FsQueue(get(), get()) } bind JobQueue::class
+                        factory { WorkManager.getInstance(androidContext()) }
                         factory { AndroidScheduler(get(), get(), get()) } bind JobManager::class
 
-                        factory { Schedule(get(), get()) }
-                        factory { Exporter(get(), get(), get(), get(named("json"))) }
-
                         single { Storage.from(androidContext()) }
-                        single { Recording(androidContext(), get(), get(), get(), get()) }
+                        single { Recording(androidContext(), get(), get()) }
+                        single { Measures(androidContext()) }
+                        single { Reports( get(), get(), get(), get(named("json")), get()) }
+                        single { Session(get(), get(), get(), get(), get()) }
+                        single { Graphing(get()) }
 
-                        single { Sr() }
+                        factory { Schedule(get(), get()) }
                     }
                 )
             )

@@ -103,15 +103,16 @@ class RecorderFragment : Fragment() {
     }
 
     private fun updateViews(state: ViewState) {
-        v.recorderTvValue.text = state.measure.toString()
+        v.recorderTvValue.text = (state.measure ?: 0).toString()
         v.recorderTvAverage.text = state.average.toString()
         v.recorderTvMax.text = state.max.toString()
 
         v.recorderTvStartTime.text = FORMAT_START_TIME.print(state.startTime)
-        v.recorderTvDuration.text = FORMAT_DURATION.print(Period(state.duration))
+        val duration = System.currentTimeMillis() - state.startTime
+        v.recorderTvDuration.text = FORMAT_DURATION.print(Period(duration))
 
         //  Accumulate values
-        val timestamp = state.startTime + state.duration
+        val timestamp = state.startTime + duration
         dataMeasure.offer(LocalTimeDataEntry(timestamp, state.measure))
         dataAverage.offer(LocalTimeDataEntry(timestamp, state.average))
 
@@ -122,7 +123,6 @@ class RecorderFragment : Fragment() {
 
     data class ViewState(
         val startTime: Long,
-        val duration: Long,
         val measure: Int,
         val average: Int,
         val max: Int
@@ -138,6 +138,7 @@ class RecorderFragment : Fragment() {
             setValue("x", localTimeZone.convertUTCToLocal(timestamp))
             setValue("value", value)
         }
+
         companion object {
             private val localTimeZone = DateTimeZone.getDefault()
         }

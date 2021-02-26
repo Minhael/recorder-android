@@ -1,21 +1,16 @@
 package me.minhael.recorder.service
 
-import com.nhaarman.mockitokotlin2.eq
 import me.minhael.design.job.JobManager
 import me.minhael.design.props.Props
-import me.minhael.recorder.PropTags
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.koin.core.component.KoinApiExtension
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.any
 import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
