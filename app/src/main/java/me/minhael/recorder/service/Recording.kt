@@ -63,8 +63,8 @@ class Recording(
             BoundService.startForeground<Recorder>(context, RecorderService::class.java).use { service ->
                 val recorder = service.api
 
-                val next = rdx.dispatch {
-                    if (!it.getWith(STATE_IS_RECORDING, false) && recorder.isRecording()) {
+                val next = rdx.dispatch { prev ->
+                    if (!prev.getWith(STATE_IS_RECORDING, false) && recorder.isRecording()) {
                         logger.info("Stop record")
 
                         //  Stop recording

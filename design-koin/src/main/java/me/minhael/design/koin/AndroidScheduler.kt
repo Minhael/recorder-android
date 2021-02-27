@@ -9,6 +9,7 @@ import me.minhael.design.job.JobTrigger
 import me.minhael.design.sl.Serializer
 import me.minhael.design.x.deserialize
 import org.joda.time.DateTime
+import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.quartz.CronExpression
@@ -17,12 +18,14 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlin.math.max
 
 class AndroidScheduler(
     private val workManager: WorkManager,
     private val bootJobs: JobQueue,
-    private val serializer: Serializer
+    private val serializer: Serializer,
+    private val threshold: Long = 1000L * 60 * 15
 ) : JobManager {
 
     override fun set(name: String, trigger: JobTrigger, job: Job): String {
@@ -122,7 +125,7 @@ class AndroidScheduler(
             return setup(
                 JobTrigger.OneShot(getDelaysFromNow(trigger.expression)),
                 name,
-                ConsecutiveWrapper(trigger.expression, name, job)
+                ConsecutiveWrapper(trigger.expression, name, job, getNextValidTime(trigger.expression), threshold)
             )
         }
 
@@ -151,25 +154,42 @@ class AndroidScheduler(
 
     private data class Wrapper(val job: Job) : Serializable
 
-    private class ConsecutiveWrapper(private val cron: String, private val name: String, private val job: Job): Job {
+    private class ConsecutiveWrapper(
+        private val cron: String,
+        private val name: String,
+        private val job: Job,
+        private val lastSchedule: Long,
+        private val threshold: Long
+    ): Job {
+        @KoinApiExtension
         override fun build(): Job.Task {
-            return ConsecutiveTask(cron, name, job)
+            return ConsecutiveTask(cron, name, job, lastSchedule, threshold)
         }
     }
 
+    @KoinApiExtension
     private class ConsecutiveTask(
         private val cron: String,
         private val name: String,
-        private val job: Job
+        private val job: Job,
+        private val lastSchedule: Long,
+        private val threshold: Long
     ): Job.Task, KoinComponent {
 
         override fun execute(): Boolean? {
             val jobs: JobManager by inject()
 
-            val rt = job.build().execute()
+            val now = DateTime.now()
+            val rt = if (abs(now.millis - lastSchedule) < threshold)
+                job.build().execute()
+            else
+                null
+
             when (rt) {
                 true, null -> jobs.set(
-                    name, JobTrigger.OneShot(getDelaysFromNow(cron)), ConsecutiveWrapper(cron, name, job)
+                    name,
+                    JobTrigger.OneShot(getDelaysFromNow(cron, now)),
+                    ConsecutiveWrapper(cron, name, job, getNextValidTime(cron, now), threshold)
                 )
             }
 
@@ -182,10 +202,13 @@ class AndroidScheduler(
 
         private val logger = LoggerFactory.getLogger(AndroidScheduler::class.java)
 
-        private fun getDelaysFromNow(cron: String): Long {
+        private fun getNextValidTime(cron: String, now: DateTime = DateTime.now()): Long {
             val exp = CronExpression(cron)
-            val now = DateTime.now()
-            return exp.getNextValidTimeAfter(now.toDate()).time - now.millis
+            return exp.getNextValidTimeAfter(now.toDate()).time
+        }
+
+        private fun getDelaysFromNow(cron: String, now: DateTime = DateTime.now()): Long {
+            return getNextValidTime(cron, now) - now.millis
         }
     }
 }

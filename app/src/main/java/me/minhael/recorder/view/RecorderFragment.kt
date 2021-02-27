@@ -103,7 +103,7 @@ class RecorderFragment : Fragment() {
     }
 
     private fun updateViews(state: ViewState) {
-        v.recorderTvValue.text = (state.measure ?: 0).toString()
+        v.recorderTvValue.text = state.measure.toString()
         v.recorderTvAverage.text = state.average.toString()
         v.recorderTvMax.text = state.max.toString()
 
@@ -146,7 +146,6 @@ class RecorderFragment : Fragment() {
 
     companion object {
         private val FORMAT_START_TIME = DateTimeFormat.forPattern("MM/dd HH:mm")
-        private val FORMAT_TIME = DateTimeFormat.forPattern("HH:mm:ss")
         private val FORMAT_DURATION = PeriodFormatterBuilder()
             .printZeroAlways()
             .minimumPrintedDigits(2)

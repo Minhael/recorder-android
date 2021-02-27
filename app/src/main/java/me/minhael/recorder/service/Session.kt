@@ -37,7 +37,7 @@ class Session(
         logger.debug("Start session")
 
         val now = DateTime.now().millis
-        val interval = props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, 250L)
+        val interval = props.get(PropTags.MEASURE_PERIOD_UPDATE_MS, PropTags.MEASURE_PERIOD_UPDATE_MS_DEFAULT)
         reports.start()
         recording.start()
         measures.start(interval)

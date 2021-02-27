@@ -15,6 +15,7 @@ import me.minhael.design.job.Job
 import me.minhael.design.job.JobManager
 import me.minhael.design.sl.Serializer
 import me.minhael.design.test.JobManagerTest
+import org.joda.time.DateTimeUtils
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -64,6 +65,7 @@ internal class AndroidSchedulerTest : KoinTest, JobManagerTest {
     }
 
     override fun advanceTo(name: String, timestamp: Long, isAfterTrigger: Boolean) {
+        DateTimeUtils.setCurrentMillisFixed(timestamp)
         if (isAfterTrigger)
             WorkManagerTestInitHelper.getTestDriver(InstrumentationRegistry.getInstrumentation().targetContext)?.apply {
                 val manager = WorkManager.getInstance(InstrumentationRegistry.getInstrumentation().targetContext)

@@ -10,6 +10,7 @@ import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
+import kotlin.math.max
 
 class Schedule(
     private val props: Props,
@@ -19,12 +20,10 @@ class Schedule(
     @KoinApiExtension
     fun activate() {
         val nextStart = nextStart(props)
-        val nextEnd = nextEnd(props, nextStart)
-
-        logger.debug("Computed schedule\nNextStart = {}\nNextEnd = {}\nDuration = {} Period = {}", nextStart, nextEnd)
+        logger.debug("Activate = {}", nextStart)
 
         val cron = "0 ${nextStart.minuteOfHour} ${nextStart.hourOfDay} * * ?"
-        scheduler.set(WORK_ACTIVATE, JobTrigger.Cron(cron)) { Activate(nextEnd.millis) }
+        scheduler.set(WORK_ACTIVATE, JobTrigger.Cron(cron), ActivateJob())
     }
 
     fun deactivate() {
@@ -35,19 +34,38 @@ class Schedule(
         scheduler.remove(WORK_DEACTIVATE)
     }
 
+    class ActivateJob : Job {
+        @KoinApiExtension
+        override fun build(): Job.Task {
+            return Activate()
+        }
+    }
+
+    class DeactivateJob: Job {
+        @KoinApiExtension
+        override fun build(): Job.Task {
+            return Deactivate()
+        }
+    }
+
     @KoinApiExtension
-    class Activate(private val endTime: Long) : Job.Task, KoinComponent {
-        override fun execute(): Boolean? {
+    class Activate : Job.Task, KoinComponent {
+        override fun execute(): Boolean {
             logger.info("Start recording in background")
 
+            val props: Props by inject()
             val scheduler: JobManager by inject()
             val session: Session by inject()
-            val now = System.currentTimeMillis()
 
-            if (endTime > now) {
-                scheduler.set(WORK_DEACTIVATE, JobTrigger.OneShot(endTime - now)) { Deactivate() }
-                session.start()
-            }
+            val now = DateTime.now()
+            val nextEnd = nextEnd(props, now)
+
+            logger.debug("Deactivate = {}", nextEnd)
+            val duration = max(1000L * 60, nextEnd.millis - now.millis)
+            logger.debug("after {}", duration)
+
+            scheduler.set(WORK_DEACTIVATE, JobTrigger.OneShot(duration), DeactivateJob())
+            session.start()
 
             return true
         }
@@ -55,7 +73,7 @@ class Schedule(
 
     @KoinApiExtension
     class Deactivate : Job.Task, KoinComponent {
-        override fun execute(): Boolean? {
+        override fun execute(): Boolean {
             logger.info("End background recording")
 
             val session: Session by inject()
